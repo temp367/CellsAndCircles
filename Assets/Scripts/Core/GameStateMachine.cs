@@ -1,0 +1,66 @@
+using UnityEngine;
+
+// Машина состояний - управляет переключением между состояниями
+public class GameStateMachine
+{
+    private GameState currentState;
+    private GameManager gameManager;
+    
+    public GameState CurrentState => currentState;
+    
+    public GameStateMachine(GameManager manager)
+    {
+        gameManager = manager;
+    }
+    
+    // Переключение на новое состояние
+    public void ChangeState(GameState newState)
+    {
+        Debug.Log($"GameStateMachine: переход из {currentState?.GetType().Name} в {newState.GetType().Name}");
+
+        string fromState = currentState?.GetType().Name ?? "null";
+        string toState = newState.GetType().Name;
+
+        GameLogger.LogStateChange(fromState, toState);
+        
+        // Выходим из текущего состояния
+        if (currentState != null)
+        {
+            currentState.Exit();
+        }
+        
+        // Переключаемся на новое
+        currentState = newState;
+        
+        // Входим в новое состояние
+        if (currentState != null)
+        {
+            currentState.Enter();
+        }
+    }
+    
+    // Пробрасываем события в текущее состояние
+    public void HandleCellClick(int x, int y)
+    {
+        if (currentState != null)
+        {
+            currentState.HandleCellClick(x, y);
+        }
+    }
+    
+    public void HandleZoneClick(int zoneNumber, int zoneX, int zoneY)
+    {
+        if (currentState != null)
+        {
+            currentState.HandleZoneClick(zoneNumber, zoneX, zoneY);
+        }
+    }
+    
+    public void Update()
+    {
+        if (currentState != null)
+        {
+            currentState.Update();
+        }
+    }
+}

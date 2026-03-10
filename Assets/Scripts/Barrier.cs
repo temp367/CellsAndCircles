@@ -6,7 +6,7 @@ public class Barrier : MonoBehaviour
     public int GridY { get; set; }
     public int OwnerPlayer { get; set; }
     public int TurnPlaced { get; set; } // номер хода, когда поставлен
-    
+
     public void Initialize(int x, int y, int player, int turn)
     {
         GridX = x;
