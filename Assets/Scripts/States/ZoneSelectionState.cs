@@ -33,6 +33,12 @@ public class ZoneSelectionState : GameState
         
         // Скрываем подсказку
         ui.ShowHint("");
+
+        // Удаляем все оставшиеся зоны
+        grid.RemoveAllZones();
+        
+        // Включаем коллайдеры клеток
+        grid.EnableCellColliders();
     }
     
     public override void HandleZoneClick(int zoneNumber, int zoneX, int zoneY)

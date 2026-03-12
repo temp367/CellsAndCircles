@@ -4,6 +4,7 @@ public class PlaceBarrierCommand : Command
 {
     public int X { get; private set; }
     public int Y { get; private set; }
+    public CircleType Type { get; private set; }
     
     private GridManager grid;
     private bool placed = false;

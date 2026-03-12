@@ -9,10 +9,10 @@ public class CommandSystem : MonoBehaviour, IInitializable
     private bool isInitialized = false;
 
     private List<Command> history;
-    private int currentIndex; // для undo/redo
     
     // Событие, которое вызывается после выполнения команды
-    public System.Action<Command> OnCommandExecuted;
+    //public System.Action<Command> OnCommandExecuted;
+    public System.Action<Command> OnCommandAddedToHistory;
 
     public bool Initialize()
     {
@@ -21,7 +21,6 @@ public class CommandSystem : MonoBehaviour, IInitializable
             if (!isInitialized)
             {
                history = new List<Command>();
-               currentIndex = -1;
                isInitialized = true;
                Debug.Log($"{this.name}: инициализирован");
 
@@ -43,46 +42,53 @@ public class CommandSystem : MonoBehaviour, IInitializable
     public void ExecuteCommand(Command command)
     {
         command.Execute();
+        //OnCommandExecuted?.Invoke(command);
 
         GameLogger.LogCommand(command, "выполнена");
+    }
 
-        if (currentIndex < history.Count - 1)
-        {
-            history.RemoveRange(currentIndex + 1, history.Count - currentIndex - 1);
-        }
-
+    public void AddCommandToHistory(Command command, CircleType typeToPlace)
+    {
+        // Добавляем команду в историю
         history.Add(command);
-        currentIndex = history.Count - 1;
+        
+        // Логируем в нужном формате
+         string logEntry = $"Игрок:{command.OwnerPlayer}_Действие:{GetActionDescription(command)}_Тип:{typeToPlace}_координата:{GetCoordinates(command)}";
+        Debug.Log(logEntry);
+        
+        GameLogger.Log(logEntry);
+        
+        OnCommandAddedToHistory?.Invoke(command);
     }
     
-    public void Undo()
+    private string GetActionDescription(Command command)
     {
-        if (currentIndex >= 0)
-        {
-            history[currentIndex].Undo();
-            currentIndex--;
-            Debug.Log($"CommandSystem: отмена команды. Текущий индекс: {currentIndex}");
-        }
+        if (command is PlaceCircleCommand) return "Поставить";
+        if (command is PushTargetCommand) return "Толкнуть";
+        if (command is PlaceBarrierCommand) return "Барьер";
+        if (command is ReproduceCommand) return "Размножить";
+        return "Неизвестно";
     }
     
-    public void Redo()
+    private string GetCoordinates(Command command)
     {
-        if (currentIndex < history.Count - 1)
+        if (command is PlaceCircleCommand placeCmd)
         {
-            currentIndex++;
-            history[currentIndex].Execute();
-            Debug.Log($"CommandSystem: повтор команды. Текущий индекс: {currentIndex}");
+            return $"({placeCmd.X}, {placeCmd.Y})";
         }
+        if (command is PushTargetCommand pushCmd)
+        {
+            return $"({pushCmd.Target.GridX}, {pushCmd.Target.GridY})";
+        }
+        if (command is PlaceBarrierCommand barrierCmd)
+        {
+            return $"({barrierCmd.X}, {barrierCmd.Y})";
+        }
+        if (command is ReproduceCommand reproduceCmd)
+        {
+            return $"({reproduceCmd.X}, {reproduceCmd.Y})";
+        }
+        return "(?, ?)";
     }
     
-    public List<string> GetHistoryDescription()
-    {
-        List<string> descriptions = new List<string>();
-        for (int i = 0; i < history.Count; i++)
-        {
-            string prefix = (i == currentIndex) ? "▶ " : "  ";
-            descriptions.Add($"{prefix}{i}: {history[i].GetDescription()}");
-        }
-        return descriptions;
-    }
 }

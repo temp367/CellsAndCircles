@@ -14,12 +14,6 @@ public class MainGameState : GameState
     {
         Debug.Log("MainGameState: вошли в основную игру");
         
-        // Удаляем все оставшиеся зоны
-        grid.RemoveAllZones();
-        
-        // Включаем коллайдеры клеток
-        grid.EnableCellColliders();
-        
         // Сбрасываем подсветку
         grid.ClearHighlights();
         
@@ -30,6 +24,7 @@ public class MainGameState : GameState
         
         // Показываем подсказку
         ui.ShowHint($"Ход игрока {turn.CurrentPlayer}. Выберите действие.");
+        ui.GetMainGameView();
     }
     
     public override void Exit()
@@ -121,6 +116,32 @@ public class MainGameState : GameState
         {
             ui.ShowHint("Этот круг нельзя активировать");
         }
+    }
+
+    public override void StartPlaceCircleEther(CircleType type)
+    {
+        Debug.Log($"MainGameState: запуск PlaceCircleEtherState для типа {type}");
+
+        // Выходим из текущего подсостояния, если есть
+        if (currentSubState != null)
+            currentSubState.Exit();
+
+        // Создаём и входим в новое подсостояние
+        currentSubState = new PlaceCircleEtherState(this, type);
+        currentSubState.Enter();
+    }
+
+    public override void StartActivateCircleEther(CircleType type)
+    {
+        Debug.Log($"MainGameState: запуск ActivateCircleEtherState для типа {type}");
+
+        // Выходим из текущего подсостояния, если есть
+        if (currentSubState != null)
+            currentSubState.Exit();
+
+        // Создаём и входим в новое подсостояние
+        currentSubState = new ActivateCircleEtherState(this, type);
+        currentSubState.Enter();
     }
     
     // Методы для переключения в подсостояния (вызываются из GameManager)

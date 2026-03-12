@@ -7,6 +7,7 @@ public abstract class MainGameSubState
     protected GridManager grid;
     protected TurnManager turn;
     protected UIManager ui;
+    protected CommandSystem cmds;
     
     public MainGameSubState(MainGameState state)
     {
@@ -14,6 +15,7 @@ public abstract class MainGameSubState
         grid = state.Grid;
         turn = state.Turn;
         ui = state.UI;
+        cmds = state.Cmds;
     }
     
     public abstract void Enter();

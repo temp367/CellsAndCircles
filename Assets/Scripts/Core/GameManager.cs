@@ -12,11 +12,14 @@ public class GameManager : MonoBehaviour
     public TurnManager turnManager;
     public CommandSystem commandSystem;
     public UIManager uiManager;
+
     private List<IInitializable> systems = new List<IInitializable>(); // Список всех инициализируемых систем
     private bool allSystemsInitialized = false;
 
     [Header("State Machine")]
     public GameStateMachine StateMachine { get; private set; }
+
+    private Command lastPendingCommand; // Храненит последнюю команду
 
     private void Awake()
     {
@@ -87,9 +90,43 @@ public class GameManager : MonoBehaviour
         uiManager.OnCircleTypeSelected += SelectCircleType;
         uiManager.OnRestartClicked += RestartGame;
 
+        uiManager.OnPlaceTypeConfirmed += (type) => {
+            SwitchToPlaceCircleEtherState(type);
+        };
+
+        uiManager.OnActivateTypeConfirmed += (type) => {
+            SwitchToActivateCircleEtherState(type);
+        };
+
         turnManager.OnPlayerChanged += (player) => {
             gridManager?.HandlePlayerChanged(player);
         };
+
+        commandSystem.OnCommandAddedToHistory += (command) => {
+            uiManager.ShowTriggerPlacePanel(true);
+            lastPendingCommand = command;
+        };
+
+        uiManager.OnBackClicked += () => {
+            Debug.Log("GameManager: отмена команды"); 
+        };
+
+        uiManager.OnNextMyTurnClicked += () => {
+            StateMachine.ChangeState(new MainGameState(this));
+            uiManager.HideAllEtherPanels();
+        };
+    }
+
+    // Метод для переключения в состояние установки круга через эфир
+    public void SwitchToPlaceCircleEtherState(CircleType type)
+    {
+        StateMachine.StartPlaceCircleEther(type);
+    }
+
+    // Метод для переключения в состояние активации круга через эфир
+    public void SwitchToActivateCircleEtherState(CircleType type)
+    {
+        StateMachine.StartActivateCircleEther(type);
     }
 
     public void SelectCircleType(CircleType type)

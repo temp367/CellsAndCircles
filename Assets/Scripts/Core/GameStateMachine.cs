@@ -38,6 +38,22 @@ public class GameStateMachine
             currentState.Enter();
         }
     }
+
+    public void StartPlaceCircleEther(CircleType type)
+    {
+        if (currentState != null)
+        {
+            currentState.StartPlaceCircleEther(type);
+        }
+    }
+
+    public void StartActivateCircleEther(CircleType type)
+    {
+        if (currentState != null)
+        {
+            currentState.StartActivateCircleEther(type);
+        }
+    }
     
     // Пробрасываем события в текущее состояние
     public void HandleCellClick(int x, int y)

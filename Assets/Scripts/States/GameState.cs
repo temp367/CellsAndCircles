@@ -7,11 +7,13 @@ public abstract class GameState
     protected GridManager grid;
     protected TurnManager turn;
     protected UIManager ui;
+    protected CommandSystem cmds;
 
     public GridManager Grid => grid;
     public TurnManager Turn => turn;
     public UIManager UI => ui;
     public GameManager Game => gameManager;
+    public CommandSystem Cmds => cmds;
     
     // Конструктор получает ссылки на все системы
     public GameState(GameManager manager)
@@ -20,6 +22,7 @@ public abstract class GameState
         grid = manager.gridManager;
         turn = manager.turnManager;
         ui = manager.uiManager;
+        cmds = manager.commandSystem;
     }
     
     // Вызывается при входе в состояние
@@ -36,4 +39,6 @@ public abstract class GameState
     
     // Обновление каждый кадр (если нужно)
     public virtual void Update() { }
+    public virtual void StartPlaceCircleEther(CircleType type) {}
+    public virtual void StartActivateCircleEther(CircleType type) {}
 }

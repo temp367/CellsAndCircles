@@ -26,12 +26,26 @@ public class UIManager : MonoBehaviour, IInitializable
     public Button etherActivateButton;         // кнопка "Активировать шар"
     
     public GameObject etherPlacePanel;         // панель выбора типа для установки
-    public TMP_Dropdown circleTypeDropdown;    // выпадающий список
+    [Header("Кнопки выбора типа для установки")]
+    public Button placeRedButton;
+    public Button placeBlueButton;
+    public Button placeGreenButton;
+
     public Button confirmPlaceButton;          // кнопка подтверждения
     public Button backFromPlaceButton;         // кнопка назад
     
     public GameObject etherActivatePanel;      // панель выбора типа для активации
-    public TMP_Dropdown activateTypeDropdown;  // выпадающий список
+
+    [Header("Панель выбора триггера")]
+    public GameObject triggerPlacePanel;      
+    public Button nextMyTurnButton;            // кнопка 1-го триггера             
+    public Button backButton;  
+    
+    [Header("Кнопки выбора типа для активации")]
+    public Button activateRedButton;
+    public Button activateBlueButton;
+    public Button activateGreenButton;
+
     public Button confirmActivateTypeButton;   // кнопка подтверждения типа
     public Button backFromActivateTypeButton;  // кнопка назад
 
@@ -39,9 +53,18 @@ public class UIManager : MonoBehaviour, IInitializable
     public TextMeshProUGUI playerTurnText;     // текст текущего игрока
     public TextMeshProUGUI etherHintText;      // текст подсказки для эфира
 
+    
+    private CircleType selectedPlaceType = CircleType.Red; // Текущий выбранный тип для установки
+
+    private CircleType selectedActivateType = CircleType.Red; // Текущий выбранный тип для активации
+
     // События для связи с GameManager
     public System.Action<CircleType> OnCircleTypeSelected;
     public System.Action OnRestartClicked;
+    public System.Action<CircleType> OnPlaceTypeConfirmed;
+    public System.Action<CircleType> OnActivateTypeConfirmed;
+    public System.Action OnNextMyTurnClicked;
+    public System.Action OnBackClicked;
     
     public int InitPriority => 3; // последний
     public string SystemName => "UIManager";
@@ -79,6 +102,110 @@ public class UIManager : MonoBehaviour, IInitializable
         blueButton.onClick.AddListener(() => OnCircleTypeSelected?.Invoke(CircleType.Blue));
         greenButton.onClick.AddListener(() => OnCircleTypeSelected?.Invoke(CircleType.Green));
         restartButton.onClick.AddListener(() => OnRestartClicked?.Invoke());
+
+        // Кнопки выбора типа для установки (панель Place)
+        placeRedButton.onClick.AddListener(() => OnPlaceTypeSelected(CircleType.Red));
+        placeBlueButton.onClick.AddListener(() => OnPlaceTypeSelected(CircleType.Blue));
+        placeGreenButton.onClick.AddListener(() => OnPlaceTypeSelected(CircleType.Green));
+    
+        // Кнопки выбора типа для активации (панель Activate)
+        activateRedButton.onClick.AddListener(() => OnActivateTypeSelected(CircleType.Red));
+        activateBlueButton.onClick.AddListener(() => OnActivateTypeSelected(CircleType.Blue));
+        activateGreenButton.onClick.AddListener(() => OnActivateTypeSelected(CircleType.Green));
+
+        // Управление панелью эфира
+        etherButton.onClick.AddListener(() => ShowEtherMenu(true));
+        cancelEtherButton.onClick.AddListener(() => ShowEtherMenu(false));
+
+        //  Переход к панелям Place и Activate
+        etherPlaceButton.onClick.AddListener(() => {
+            ShowEtherMenu(false);      
+            ShowEtherPlacePanel(true); 
+        });
+        etherActivateButton.onClick.AddListener(() => {
+            ShowEtherMenu(false);          
+            ShowEtherActivatePanel(true);  
+        });
+    
+        // Кнопки навигации внутри панелей
+        backFromPlaceButton.onClick.AddListener(() => {
+            ShowEtherPlacePanel(false);
+            ShowEtherMenu(true); 
+        });
+        backFromActivateTypeButton.onClick.AddListener(() => {
+            ShowEtherActivatePanel(false);
+            ShowEtherMenu(true); 
+        });
+         
+        confirmPlaceButton.onClick.AddListener(() => {
+            ShowEtherPlacePanel(false);
+            ShowHint("Выбери клетку для установки");
+            
+            OnPlaceTypeConfirmed?.Invoke(selectedPlaceType);
+        });
+        confirmActivateTypeButton.onClick.AddListener(() => {
+            ShowEtherActivatePanel(false);
+            ShowHint("Выбери клетку активации круга");
+            
+            OnActivateTypeConfirmed?.Invoke(selectedActivateType);
+        });
+
+        nextMyTurnButton.onClick.AddListener(() => OnNextMyTurnClicked?.Invoke());
+        backButton.onClick.AddListener(() => OnBackClicked?.Invoke());
+    }
+
+    public void ShowTriggerPlacePanel(bool show)
+    {
+        if (triggerPlacePanel != null)
+        {
+            triggerPlacePanel.SetActive(show);        
+        }
+    }
+    
+    public void HideAllEtherPanels()
+    {
+        ShowEtherMenu(false);
+        ShowEtherPlacePanel(false);
+        ShowEtherActivatePanel(false);
+        ShowTriggerPlacePanel(false); 
+    }
+
+    private void OnPlaceTypeSelected(CircleType type)
+    {
+        selectedPlaceType = type;
+
+        // Визуально подсвечиваем выбранную кнопку
+        UpdatePlaceTypeButtons(type);
+    }
+
+    private void OnActivateTypeSelected(CircleType type)
+    {
+        selectedActivateType = type;
+
+        // Визуально подсвечиваем выбранную кнопку
+        UpdateActivateTypeButtons(type);
+    }
+
+    // Подсветка выбранной кнопки в панели Place
+    private void UpdatePlaceTypeButtons(CircleType selected)
+    {
+        if (placeRedButton != null)
+            placeRedButton.interactable = (selected != CircleType.Red);
+        if (placeBlueButton != null)
+            placeBlueButton.interactable = (selected != CircleType.Blue);
+        if (placeGreenButton != null)
+            placeGreenButton.interactable = (selected != CircleType.Green);
+    }
+
+    // Подсветка выбранной кнопки в панели Activate
+    private void UpdateActivateTypeButtons(CircleType selected)
+    {
+        if (activateRedButton != null)
+            activateRedButton.interactable = (selected != CircleType.Red);
+        if (activateBlueButton != null)
+            activateBlueButton.interactable = (selected != CircleType.Blue);
+        if (activateGreenButton != null)
+            activateGreenButton.interactable = (selected != CircleType.Green);
     }
 
     // Обновление текста игрока
@@ -110,35 +237,13 @@ public class UIManager : MonoBehaviour, IInitializable
     {
         if (etherPlacePanel != null)
             etherPlacePanel.SetActive(show);
-        
-        // Сбрасываем состояние кнопки подтверждения
-        if (show && confirmPlaceButton != null)
-            confirmPlaceButton.interactable = false;
     }
 
     // Показать/скрыть панель активации круга
     public void ShowEtherActivatePanel(bool show)
     {
-        if (etherActivatePanel != null)
-            etherActivatePanel.SetActive(show);
+        etherActivatePanel.SetActive(show);
         
-        // Сбрасываем состояние кнопки подтверждения
-        if (show && confirmActivateTypeButton != null)
-            confirmActivateTypeButton.interactable = false;
-    }
-
-    // Активировать кнопку подтверждения для установки
-    public void SetConfirmPlaceButtonInteractable(bool interactable)
-    {
-        if (confirmPlaceButton != null)
-            confirmPlaceButton.interactable = interactable;
-    }
-
-    // Активировать кнопку подтверждения для активации
-    public void SetConfirmActivateButtonInteractable(bool interactable)
-    {
-        if (confirmActivateTypeButton != null)
-            confirmActivateTypeButton.interactable = interactable;
     }
 
     // Показать подсказку
@@ -151,61 +256,24 @@ public class UIManager : MonoBehaviour, IInitializable
         }
     }
 
-    // Скрыть все панели эфира
-    public void HideAllEtherPanels()
-    {
-        ShowEtherMenu(false);
-        ShowEtherPlacePanel(false);
-        ShowEtherActivatePanel(false);
-        ShowHint("");
-    }
-
-    // Получить выбранный тип из выпадающего списка установки
+    // Получить выбранный тип 
     public CircleType GetSelectedPlaceType()
     {
-        int index = circleTypeDropdown != null ? circleTypeDropdown.value : 0;
-        return index switch
-        {
-            0 => CircleType.Red,
-            1 => CircleType.Blue,
-            2 => CircleType.Green,
-            _ => CircleType.Red,
-        };
+        return selectedPlaceType;
     }
 
-    // Получить выбранный тип из выпадающего списка активации
+    // Получить выбранный тип 
     public CircleType GetSelectedActivateType()
     {
-        int index = activateTypeDropdown != null ? activateTypeDropdown.value : 0;
-        return index switch
-        {
-            0 => CircleType.Red,
-            1 => CircleType.Blue,
-            2 => CircleType.Green,
-            _ => CircleType.Red
-        };
+        return selectedActivateType;
     }
 
-    public void UpdateEtherQueue(List<string> commands)
+    public void GetMainGameView()
     {
-        if (etherQueueText != null)
-        {
-            if (commands.Count == 0)
-            {
-                etherQueueText.text = "Нет отложенных действий";
-            }
-            else
-            {
-                string text = "Отложенные действия:\n";
-                foreach (var cmd in commands)
-                {
-                    text += $"• {cmd}\n";
-                }
-                etherQueueText.text = text;
-            }
-        }
+        etherButton.interactable = true;
+        cancelEtherButton.interactable = true;
+        redButton.interactable = true;
+        blueButton.interactable = true;
+        greenButton.interactable = true;
     }
 }
-
-
-

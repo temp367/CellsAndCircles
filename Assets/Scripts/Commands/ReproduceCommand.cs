@@ -1,5 +1,9 @@
 public class ReproduceCommand : Command
 {
+    public int X { get; private set; }
+    public int Y { get; private set; }
+    public CircleType Type { get; private set; }
+
     private int x;
     private int y;
     private CircleType type;
