@@ -13,9 +13,6 @@ public class GreenCircle : Circle
     
     public override bool Activate()
     {
-        //Debug.Log($"Активация зелёного круга на ({GridX}, {GridY})");
-        
-        // Собираем пустые соседние клетки
         List<Vector2Int> emptyNeighbors = new List<Vector2Int>();
         
         Vector2Int[] directions = new Vector2Int[]
@@ -49,13 +46,53 @@ public class GreenCircle : Circle
 
         if (emptyNeighbors.Count == 0)
         {
-            Debug.Log("Нет свободных соседних клеток для размножения.");
             return false;
         }
         
         // Запускаем выбор клетки
         gameManager.StartGreenReproduction(this, emptyNeighbors);
         return true;
+    }
+
+    public override bool ActivateEther()
+    {
+        List<Vector2Int> targetsNeibors = new List<Vector2Int>();
+        
+        Vector2Int[] directions = new Vector2Int[]
+        {
+            new Vector2Int(1, 0),
+            new Vector2Int(-1, 0),
+            new Vector2Int(0, 1),
+            new Vector2Int(0, -1),
+            new Vector2Int(1, 1),
+            new Vector2Int(1, -1),
+            new Vector2Int(-1, 1),
+            new Vector2Int(-1, -1)
+        };
+        
+        foreach (var dir in directions)
+        {
+            int nearX = GridX + dir.x;
+            int nearY = GridY + dir.y;
+
+            // Проверка границ
+            if (gridManager.GetCellObject(nearX, nearY) == null) continue;   
+            if(gridManager.IsCellOccupied(nearX, nearY) && gridManager.GetCircleAt(nearX, nearY).Type == CircleType.Core) continue;   
+            
+            if (!gridManager.HasBarrierAt(nearX, nearY))
+            {
+                targetsNeibors.Add(new Vector2Int(nearX, nearY));
+            }
+            
+        }
+
+        if (targetsNeibors.Count == 0) return false;
+        else
+        {
+            gameManager.StartGreenReproductionEther(this, targetsNeibors);
+            
+            return true;
+        }
     }
     
     // Метод для создания нового зелёного круга на выбранной клетке

@@ -15,17 +15,18 @@ public class PlaceCircleCommand : Command
         this.grid = grid;
     }
     
-    public override void Execute()
+    public override bool Execute()
     {
         if (!executed)
         {
-            // PlaceCircle возвращает bool, но нам нужна ссылка на созданный круг
-            // Придётся немного изменить PlaceCircle, чтобы он возвращал Circle
             bool sucses = grid.PlaceCircle(X, Y, OwnerPlayer, type);
+
             if(sucses) createdCircle =  grid.GetCircleAt(X, Y);
+            
             executed = true;
-            UnityEngine.Debug.Log($"PlaceCircleCommand: выполнен, создан {type} на ({X},{Y})");
         }
+        
+        return executed;
     }
     
     public override void Undo()

@@ -76,12 +76,17 @@ public class MainGameState : GameState
         
         if(selectedType != CircleType.Core)
         {
-            bool success = grid.PlaceCircle(x, y, turn.CurrentPlayer, selectedType);
+            // Создаём команду для установки круга
+            Command command = new PlaceCircleCommand(x, y, selectedType, turn.CurrentPlayer, grid);   
+
+            bool success = command.Execute();
         
             if (success) 
             {
                 GameLogger.Log($"Игрок {turn.CurrentPlayer} установил {selectedType} на ({x}, {y})");
                 Debug.Log($"MainGameState: игрок {turn.CurrentPlayer} ставит {selectedType} круг на ({x}, {y})");
+                
+                cmds.AddCommandToHistory(command, selectedType, success, false);
                 ReturnToNormalAndSwitchPlayer();
             }
             else
@@ -100,17 +105,12 @@ public class MainGameState : GameState
     {
         if (circle.CanActivate)
         {
-            Debug.Log($"MainGameState: активация {circle.Type} круга");
-            
-            // Круг сам собирает цели и сообщает через GameManager
             bool hasTargets = circle.Activate();
             
             if (!hasTargets)
             {
-                ui.ShowHint("Нет целей для активации");
+                ui.ShowHint("Нельзя активировать");
             }
-            // Если цели есть - круг вызовет соответствующий метод
-            // (StartTargetSelection, StartBarrierSelection и т.д.)
         }
         else
         {
@@ -131,16 +131,16 @@ public class MainGameState : GameState
         currentSubState.Enter();
     }
 
-    public override void StartActivateCircleEther(CircleType type)
+    public override void StartActivateCircleEther()
     {
-        Debug.Log($"MainGameState: запуск ActivateCircleEtherState для типа {type}");
+        Debug.Log($"MainGameState: запуск ActivateCircleEtherState");
 
         // Выходим из текущего подсостояния, если есть
         if (currentSubState != null)
             currentSubState.Exit();
 
         // Создаём и входим в новое подсостояние
-        currentSubState = new ActivateCircleEtherState(this, type);
+        currentSubState = new ActivateCircleEtherState(this);
         currentSubState.Enter();
     }
     
@@ -153,6 +153,14 @@ public class MainGameState : GameState
         currentSubState = new TargetSelectionState(this, activator, targets);
         currentSubState.Enter();
     }
+    public void StartTargetCellsSelectionEther(Circle activator, List<Vector2Int> targetCells)
+    {
+        if (currentSubState != null)
+            currentSubState.Exit();
+        
+        currentSubState = new TargetSelectionEtherState(this, activator, targetCells);
+        currentSubState.Enter();
+    }
     
     public void StartBarrierSelection(Circle activator, List<Vector2Int> positions)
     {
@@ -162,6 +170,14 @@ public class MainGameState : GameState
         currentSubState = new BarrierSelectionState(this, activator, positions);
         currentSubState.Enter();
     }
+    public void StartBarrierCellsSelectionEther(Circle activator, List<Vector2Int> positions)
+    {
+        if (currentSubState != null)
+            currentSubState.Exit();
+            
+        currentSubState = new BarrierSelectionEtherState(this, activator, positions);
+        currentSubState.Enter();
+    }
     
     public void StartGreenReproduction(Circle activator, List<Vector2Int> positions)
     {
@@ -169,6 +185,14 @@ public class MainGameState : GameState
             currentSubState.Exit();
             
         currentSubState = new GreenReproductionState(this, activator, positions);
+        currentSubState.Enter();
+    }
+    public void StartGreenReproductionEther(Circle activator, List<Vector2Int> positions)
+    {
+        if (currentSubState != null)
+            currentSubState.Exit();
+            
+        currentSubState = new GreenReproductionEtherState(this, activator, positions);
         currentSubState.Enter();
     }
     

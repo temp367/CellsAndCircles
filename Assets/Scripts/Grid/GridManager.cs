@@ -72,7 +72,6 @@ public class GridManager : MonoBehaviour, IInitializable
                 GenerateZones(); // зоны
 
                 isInitialized = true;
-                Debug.Log($"{this.name}: инициализирован");
 
                 return isInitialized;
             }
@@ -137,7 +136,7 @@ public class GridManager : MonoBehaviour, IInitializable
 
     public bool PlaceCircle(int x, int y, int player, CircleType type)
     {
-        if (IsCellOccupied(x, y) && HasBarrierAt(x, y)) //Клетка свободна?
+        if (IsCellOccupied(x, y) || HasBarrierAt(x, y)) //Клетка свободна?
         {
             Debug.LogWarning($"Клетка ({x}, {y}) уже занята! Нельзя поставить круг.");
             return false;
@@ -181,43 +180,8 @@ public class GridManager : MonoBehaviour, IInitializable
         Vector2Int pos = new Vector2Int(x, y);
         placedCircles[pos] = сircle;
 
-        if (сircle.Type != CircleType.Core)
-        {
-            Debug.Log($"{type}Circle игрока {player} создан на клетке ({x}, {y})");   
-        }
-
         return true;
     }
-
-    
-    // public Circle PlaceCircleAndReturn(int x, int y, int player, CircleType type)
-    // {
-    //     // Копируем логику из PlaceCircle, но возвращаем созданный круг
-    //     if (IsCellOccupied(x, y) || HasBarrierAt(x, y)) return null;
-
-    //     GameObject cell = GetCellObject(x, y);
-    //     if (cell == null) return null;
-
-    //     if (!prefabsByType.TryGetValue(type, out GameObject prefab)) return null;
-
-    //     GameObject circleObj = Instantiate(prefab, cell.transform);
-    //     circleObj.transform.localPosition = Vector3.zero;
-    //     circleObj.name = $"{type}Circle_{x}_{y}_P{player}";
-
-    //     Circle circle = circleObj.GetComponent<Circle>();
-    //     if (circle == null)
-    //     {
-    //         Destroy(circleObj);
-    //         return null;
-    //     }
-
-    //     circle.Initialize(x, y, player, this, gameManager);
-    //     circle.ApplyEffect();
-
-    //     placedCircles[new Vector2Int(x, y)] = circle;
-
-    //     return circle;
-    // }
     
     
     public bool PlaceBarrier(int x, int y, int player, int turn)
@@ -369,7 +333,6 @@ public class GridManager : MonoBehaviour, IInitializable
         {
             zoneCells.Remove(zoneToRemove);
             Destroy(zoneToRemove.gameObject);
-            Debug.Log($"Зона {zoneNumber} удалена");
         }
     }
 
@@ -383,7 +346,6 @@ public class GridManager : MonoBehaviour, IInitializable
         }
 
         zoneCells.Clear();
-        Debug.Log("Все зоны удалены");
     }
 
     public void DisableCellColliders()
@@ -441,7 +403,7 @@ public class GridManager : MonoBehaviour, IInitializable
         return circle; // если нет круга, вернёт null
     }
 
-    public void MoveCircle(int oldX, int oldY, int newX, int newY, Circle circle)
+    public bool MoveCircle(int oldX, int oldY, int newX, int newY, Circle circle)
     {
         Vector2Int oldPos = new Vector2Int(oldX, oldY);
         Vector2Int newPos = new Vector2Int(newX, newY);
@@ -453,10 +415,23 @@ public class GridManager : MonoBehaviour, IInitializable
 
             // Обновляем координаты в самом круге через публичный метод
             circle.UpdatePosition(newX, newY);
+
+            // Перемещаем GameObject к новой клетке-родителю
+            GameObject newCell = GetCellObject(newX, newY);
+            
+            if (newCell != null)
+            {
+                circle.gameObject.transform.SetParent(newCell.transform);
+                circle.gameObject.transform.localPosition = Vector3.zero;
+                circle.gameObject.name = $"{circle.Type}Circle_{newX}_{newY}_P{circle.Player}";
+            }
+
+            return true;
         }
         else
         {
             Debug.LogError($"Попытка переместить круг, но его нет в словаре на позиции ({oldX}, {oldY})");
+            return false;
         }
     }
 

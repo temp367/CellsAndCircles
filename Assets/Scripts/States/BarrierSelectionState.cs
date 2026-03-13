@@ -36,8 +36,9 @@ public class BarrierSelectionState : MainGameSubState
         if (possiblePositions.Contains(clickedPos))
         {
             Command command = new PlaceBarrierCommand(x, y, turn.CurrentPlayer, grid);
-            CommandSystem cmdSystem = GameObject.FindAnyObjectByType<CommandSystem>();
-            cmdSystem.ExecuteCommand(command);
+
+            cmds.AddCommandToHistory(command, activatingCircle.Type, command.Execute(), false);
+            Debug.Log("Команда записана в history");
 
             mainGameState.ReturnToNormalAndSwitchPlayer();
         }

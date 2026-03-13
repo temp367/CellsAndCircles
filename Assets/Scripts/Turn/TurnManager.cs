@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 //Управление ходами
@@ -18,6 +19,7 @@ public class TurnManager : MonoBehaviour, IInitializable
     [SerializeField]private UIManager uiManager;
 
     public int CurrentPlayer => currentPlayer;
+    
 
     public System.Action<int> OnPlayerChanged;  // Событие для оповещения о смене игрока
 
@@ -32,7 +34,6 @@ public class TurnManager : MonoBehaviour, IInitializable
                 OnPlayerChanged?.Invoke(currentPlayer);
 
                 isInitialized = true;
-                Debug.Log($"{this.name}: инициализирован");
 
                 return isInitialized;   
             }
@@ -64,6 +65,23 @@ public class TurnManager : MonoBehaviour, IInitializable
 
 
         Debug.Log($"TurnManager: Ход игрока {currentPlayer}");
+    }
+
+    public TurnTrigger CreateTriggerForCurrentPlayer()
+    {
+        TurnTrigger trigger = new TurnTrigger(currentPlayer);
+        
+        OnPlayerChanged += (player) => {
+        trigger?.SwitchTurn(currentPlayer);
+        trigger?.CheckTurn(currentPlayer);
+        };
+
+        trigger.OnTurnReached += () => {
+            // Когда триггер срабатывает, оповещаем подписчиков
+            
+        };
+
+        return trigger;
     }
 
     // Проверка, является ли круг принадлежащим текущему игроку

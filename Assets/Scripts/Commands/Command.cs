@@ -8,7 +8,7 @@ public abstract class Command
         OwnerPlayer = ownerPlayer;
     }
     
-    public abstract void Execute();
+    public abstract bool Execute();
     public abstract void Undo();
     public abstract string GetDescription();
 }

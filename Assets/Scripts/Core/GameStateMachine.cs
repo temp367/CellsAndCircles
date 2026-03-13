@@ -16,8 +16,6 @@ public class GameStateMachine
     // Переключение на новое состояние
     public void ChangeState(GameState newState)
     {
-        Debug.Log($"GameStateMachine: переход из {currentState?.GetType().Name} в {newState.GetType().Name}");
-
         string fromState = currentState?.GetType().Name ?? "null";
         string toState = newState.GetType().Name;
 
@@ -47,11 +45,11 @@ public class GameStateMachine
         }
     }
 
-    public void StartActivateCircleEther(CircleType type)
+    public void StartActivateCircleEther()
     {
         if (currentState != null)
         {
-            currentState.StartActivateCircleEther(type);
+            currentState.StartActivateCircleEther();
         }
     }
     

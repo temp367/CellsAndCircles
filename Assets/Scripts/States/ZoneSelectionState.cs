@@ -12,8 +12,6 @@ public class ZoneSelectionState : GameState
     
     public override void Enter()
     {
-        Debug.Log("ZoneSelectionState: вошли в состояние выбора зон");
-        
         // Очищаем владельцев зон
         zoneOwner.Clear();
         
@@ -29,8 +27,6 @@ public class ZoneSelectionState : GameState
     
     public override void Exit()
     {
-        Debug.Log("ZoneSelectionState: выходим из состояния выбора зон");
-        
         // Скрываем подсказку
         ui.ShowHint("");
 
@@ -43,8 +39,6 @@ public class ZoneSelectionState : GameState
     
     public override void HandleZoneClick(int zoneNumber, int zoneX, int zoneY)
     {
-        Debug.Log($"ZoneSelectionState: клик по зоне {zoneNumber}, центр ({zoneX}, {zoneY})");
-        
         // Проверяем, не занята ли зона
         if (zoneOwner.ContainsKey(zoneNumber))
         {
@@ -62,8 +56,6 @@ public class ZoneSelectionState : GameState
             
             // Удаляем визуальную зону
             grid.RemoveZone(zoneNumber);
-            
-            Debug.Log($"ZoneSelectionState: игрок {turn.CurrentPlayer} занял зону {zoneNumber}");
             
             // Проверяем, не закончилась ли фаза выбора
             if (zoneOwner.Count == 2)

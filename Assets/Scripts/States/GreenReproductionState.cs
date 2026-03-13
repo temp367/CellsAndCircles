@@ -15,8 +15,6 @@ public class GreenReproductionState : MainGameSubState
     
     public override void Enter()
     {
-        Debug.Log("GreenReproductionState: вошли в режим размножения");
-        
         // Подсвечиваем доступные клетки
         grid.HighlightCells(possiblePositions, Color.green);
         
@@ -36,8 +34,8 @@ public class GreenReproductionState : MainGameSubState
         if (possiblePositions.Contains(clickedPos))
         {
             Command command = new ReproduceCommand(x, y, CircleType.Green, turn.CurrentPlayer, grid, activatingCircle);
-            CommandSystem cmdSystem = GameObject.FindAnyObjectByType<CommandSystem>();
-            cmdSystem.ExecuteCommand(command);
+            
+            cmds.AddCommandToHistory(command, activatingCircle.Type, command.Execute(), false);
 
             mainGameState.ReturnToNormalAndSwitchPlayer();
         }

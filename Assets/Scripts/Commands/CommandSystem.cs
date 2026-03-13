@@ -9,56 +9,30 @@ public class CommandSystem : MonoBehaviour, IInitializable
     private bool isInitialized = false;
 
     private List<Command> history;
-    
-    // Событие, которое вызывается после выполнения команды
-    //public System.Action<Command> OnCommandExecuted;
-    public System.Action<Command> OnCommandAddedToHistory;
 
     public bool Initialize()
     {
-        try
+        if (!isInitialized)
         {
-            if (!isInitialized)
-            {
-               history = new List<Command>();
-               isInitialized = true;
-               Debug.Log($"{this.name}: инициализирован");
-
-               return isInitialized; 
-            }
-            else
-            {
-                return isInitialized; 
-            }
-            
+           history = new List<Command>();
+           isInitialized = true;
+           return isInitialized; 
         }
-        catch (System.Exception e)
-        {
-            Debug.LogError($"{this.name}: ошибка инициализации - {e.Message}");
-            return isInitialized;
-        }
-    }
-    
-    public void ExecuteCommand(Command command)
-    {
-        command.Execute();
-        //OnCommandExecuted?.Invoke(command);
-
-        GameLogger.LogCommand(command, "выполнена");
+        
+        return isInitialized; 
     }
 
-    public void AddCommandToHistory(Command command, CircleType typeToPlace)
+    public void AddCommandToHistory(Command command, CircleType typeToPlace, bool execute, bool isEther)
     {
         // Добавляем команду в историю
         history.Add(command);
         
         // Логируем в нужном формате
-         string logEntry = $"Игрок:{command.OwnerPlayer}_Действие:{GetActionDescription(command)}_Тип:{typeToPlace}_координата:{GetCoordinates(command)}";
-        Debug.Log(logEntry);
+        string logEntry = $"Игрок:{command.OwnerPlayer}_Действие:{GetActionDescription(command)}_Тип:{typeToPlace}_координата:{GetCoordinates(command)}";
         
         GameLogger.Log(logEntry);
         
-        OnCommandAddedToHistory?.Invoke(command);
+        //OnCommandAddedToHistory?.Invoke(command);
     }
     
     private string GetActionDescription(Command command)
@@ -78,7 +52,7 @@ public class CommandSystem : MonoBehaviour, IInitializable
         }
         if (command is PushTargetCommand pushCmd)
         {
-            return $"({pushCmd.Target.GridX}, {pushCmd.Target.GridY})";
+            return $"({pushCmd.NewX}, {pushCmd.NewY})";
         }
         if (command is PlaceBarrierCommand barrierCmd)
         {

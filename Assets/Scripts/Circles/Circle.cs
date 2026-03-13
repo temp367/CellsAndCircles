@@ -56,6 +56,10 @@ public abstract class Circle : MonoBehaviour
     {
         return false;
     }
+    public virtual bool ActivateEther()
+    {
+        return false;
+    }
 
     public virtual void SetGlow(bool enabled)
     {

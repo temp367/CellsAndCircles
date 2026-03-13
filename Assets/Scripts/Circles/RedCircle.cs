@@ -29,82 +29,82 @@ public class RedCircle : Circle
 
             Circle neighbor = gridManager.GetCircleAt(nearX, nearY);
 
-            // Круг прнадалежит другому игроку?
             if (neighbor != null  && neighbor.CanBePushed)
             {
                 int finishX = nearX + dir.x;
                 int finishY = nearY + dir.y;
 
                 // Проверяем, свободна ли новая клетка
-                if (gridManager.IsCellOccupied(finishX, finishY) || gridManager.HasBarrierAt(finishX, finishY) || (gridManager.GetCellObject(finishX, finishY) == null)) continue; // занято, цель не двигается
-
+                if ((gridManager.GetCellObject(finishX, finishY) == null) ||
+                     gridManager.IsCellOccupied(finishX, finishY) || 
+                     gridManager.HasBarrierAt(finishX, finishY)) continue; // занято, цель не двигается
+                
                 targets.Add(neighbor);
             }
         }
 
-        if (targets.Count == 0)
-        {
-            Debug.Log("Нет вражеских кругов рядом, активация бесполезна.");
-            return false;
-        }
+        if (targets.Count == 0) return false;
         else
         {
-            // Запускаем процесс выбора цели
-            gameManager.StartTargetSelection(this, targets);   
+            gameManager.StartTargetSelection(this, targets);
 
             return true;
         }
     }
 
-    public void PushTarget(Circle target)
+    public override bool ActivateEther()
     {
-        if (!target.CanBePushed)
+        List<Vector2Int> targetCells = new List<Vector2Int>(); 
+    
+        Vector2Int[] directions = new Vector2Int[]
         {
-            Debug.Log($"Цель {target.GetType().Name} нельзя толкнуть!");
-            return;
-        }
-
-        // Определяем направление от себя к цели
-        int directX = target.GridX - GridX;
-        int directY = target.GridY - GridY;
-
-        // Проверка, что цель соседняя 
-        if (Mathf.Abs(directX) > 1 || Mathf.Abs(directY) > 1 || (directX == 0 && directY == 0))
+            new Vector2Int(1, 0), 
+            new Vector2Int(-1, 0),
+            new Vector2Int(0, 1), 
+            new Vector2Int(0, -1),
+            new Vector2Int(1, 1), 
+            new Vector2Int(1, -1),
+            new Vector2Int(-1, 1),
+            new Vector2Int(-1, -1)
+        };
+    
+        foreach (var dir in directions)
         {
-            Debug.LogError("Цель не является соседней!");
-            return;
+            int nearX = GridX + dir.x;
+            int nearY = GridY + dir.y;
+    
+            GameObject neighbor = gridManager.GetCellObject(nearX, nearY);
+    
+            if (neighbor != null && !gridManager.HasBarrierAt(nearX, nearY))
+            {
+                int finishX = nearX + dir.x;
+                int finishY = nearY + dir.y;
+    
+                if (!gridManager.HasBarrierAt(finishX, finishY) && 
+                    gridManager.GetCellObject(finishX, finishY) != null)
+                {
+                    if(gridManager.GetCircleAt(nearX, nearY) != null && gridManager.GetCircleAt(nearX, nearY).Type == CircleType.Core)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        targetCells.Add(new Vector2Int(nearX, nearY));   
+                    }
+                }
+            }
         }
-
-        // Новая позиция для цели
-        int newX = target.GridX + directX;
-        int newY = target.GridY + directY;
-
-        // Получаем GameObject цели
-        GameObject targetObj = target.gameObject;
-
-        // Находим клетку назначения
-        GameObject newCell = gridManager.GetCellObject(newX, newY);
-
-        if (newCell == null)
+    
+        if (targetCells.Count == 0) return false;
+        else
         {
-            Debug.LogError($"Клетка назначения ({newX}, {newY}) не найдена!");
-            return;
+            gameManager.StartTargetCellsSelectionEther(this, targetCells); 
+            
+            return true;
         }
-
-        // Перемещаем объект в новую клетку
-        targetObj.transform.SetParent(newCell.transform);
-        targetObj.transform.localPosition = Vector3.zero;
-
-        // Обновляем данные в словаре GridManager
-        gridManager.MoveCircle(target.GridX, target.GridY, newX, newY, target);
-        // Обновляем координаты в самом круге
-        target.UpdatePosition(newX, newY);
-
-        target.OnPushedBy(this);
-
-        Debug.Log($"Круг {target.GetType().Name} перемещён с ({target.GridX - directX}, {target.GridY - directY}) на ({newX}, {newY})");
     }
 
+    
     public override void ApplyEffect()
     {
        

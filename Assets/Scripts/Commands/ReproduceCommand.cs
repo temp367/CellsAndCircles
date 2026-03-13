@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public class ReproduceCommand : Command
 {
     public int X { get; private set; }
@@ -8,7 +10,6 @@ public class ReproduceCommand : Command
     private int y;
     private CircleType type;
     private GridManager grid;
-    private Circle createdCircle;
     private Circle parentCircle;
     
     public ReproduceCommand(int x, int y, CircleType type, int ownerPlayer, GridManager grid, Circle parent) : base(ownerPlayer)
@@ -20,26 +21,19 @@ public class ReproduceCommand : Command
         this.parentCircle = parent;
     }
     
-    public override void Execute()
+    public override bool Execute()
     {
         if (!executed)
         {
-            bool sucses = grid.PlaceCircle(x, y, OwnerPlayer, type);
-            if(sucses) createdCircle = grid.GetCircleAt(x, y);
-
-            executed = true;
-            UnityEngine.Debug.Log($"ReproduceCommand: создан {type} на ({x},{y})");
+            executed = grid.PlaceCircle(x, y, OwnerPlayer, type);
         }
+        
+        return executed;
     }
     
     public override void Undo()
     {
-        if (executed && createdCircle != null)
-        {
-            grid.RemoveCircle(createdCircle);
-            executed = false;
-            UnityEngine.Debug.Log($"ReproduceCommand: отменён");
-        }
+        
     }
     
     public override string GetDescription()

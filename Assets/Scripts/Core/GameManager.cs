@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
     public TurnManager turnManager;
     public CommandSystem commandSystem;
     public UIManager uiManager;
+    public EtherSystem etherSystem;
 
     private List<IInitializable> systems = new List<IInitializable>(); // Список всех инициализируемых систем
     private bool allSystemsInitialized = false;
@@ -44,18 +45,22 @@ public class GameManager : MonoBehaviour
         if (uiManager != null) systems.Add(uiManager);
         else Debug.LogError($"{uiManager.name}: UiManager не найден!");
         
+        if (etherSystem != null) systems.Add(etherSystem);
+        else Debug.LogError($"{etherSystem.name}: EtherSystem не найден!");
+        
         // Сортируем по приоритету
         systems.Sort((a, b) => a.InitPriority.CompareTo(b.InitPriority));
     }
 
     private bool InitializeSystems()
     {
-        Debug.Log("=== НАЧАЛО ИНИЦИАЛИЗАЦИИ СИСТЕМ ===");
-
         try
         {
             //Инициализация зависимости
             foreach (var system in systems) system.Initialize();
+
+            // Создаём машину состояний
+            StateMachine = new GameStateMachine(this);
 
             // Подписываемся на события UI 
             SubscribeToEvents();
@@ -63,23 +68,17 @@ public class GameManager : MonoBehaviour
         }
         catch(Exception e)
         {
-            Debug.LogError($"{this.name}: ошибка инициализации - {e.Message}");
+            Debug.LogError($"{this.name}: {e.Message}");
             return allSystemsInitialized;
         }
 
             allSystemsInitialized = true;
-            Debug.Log("=== ВСЕ СИСТЕМЫ УСПЕШНО ИНИЦИАЛИЗИРОВАНЫ ===");
 
             return allSystemsInitialized;
     }
     
     private void StartGame()
     {
-        GameLogger.Log("GameManager: запуск игры");
-        
-        // Создаём машину состояний
-        StateMachine = new GameStateMachine(this);
-        
         // Начинаем с выбора зон
         StateMachine.ChangeState(new ZoneSelectionState(this));
     }
@@ -91,18 +90,33 @@ public class GameManager : MonoBehaviour
         uiManager.OnRestartClicked += RestartGame;
 
         uiManager.OnPlaceTypeConfirmed += (type) => {
-            SwitchToPlaceCircleEtherState(type);
+            StateMachine.StartPlaceCircleEther(type);
         };
 
-        uiManager.OnActivateTypeConfirmed += (type) => {
-            SwitchToActivateCircleEtherState(type);
-        };
+        uiManager.OnActivateTypeConfirmed += StateMachine.StartActivateCircleEther;
+        
 
         turnManager.OnPlayerChanged += (player) => {
             gridManager?.HandlePlayerChanged(player);
         };
 
-        commandSystem.OnCommandAddedToHistory += (command) => {
+        PlaceCircleEtherState.OnCommandCreatedStatic += (command) => {
+            uiManager.ShowTriggerPlacePanel(true);
+            lastPendingCommand = command;
+        };
+
+        TargetSelectionEtherState.OnCommandActivateRedStatic += (command) =>
+        {
+            uiManager.ShowTriggerPlacePanel(true);
+            lastPendingCommand = command;
+        };
+        BarrierSelectionEtherState.OnCommandActivateBlueStatic += (command) =>
+        {
+            uiManager.ShowTriggerPlacePanel(true);
+            lastPendingCommand = command;
+        };
+        GreenReproductionEtherState.OnCommandActivateGreenStatic += (command) =>
+        {
             uiManager.ShowTriggerPlacePanel(true);
             lastPendingCommand = command;
         };
@@ -112,28 +126,36 @@ public class GameManager : MonoBehaviour
         };
 
         uiManager.OnNextMyTurnClicked += () => {
-            StateMachine.ChangeState(new MainGameState(this));
-            uiManager.HideAllEtherPanels();
+            if (StateMachine.CurrentState is MainGameState mainGameState)
+            {
+                if (lastPendingCommand != null)
+                {
+                    etherSystem.AddCommandToEther(lastPendingCommand, turnManager.CurrentPlayer);
+                    
+                    Debug.Log($"Триггер активирован. Сработает в ваш следующий ход");
+                    
+                    // Очищаем временное хранение
+                    lastPendingCommand = null;
+                }
+                else
+                {
+                    uiManager.ShowHint($"Ход игрока {turnManager.CurrentPlayer}");
+                }
+
+                mainGameState.ReturnToNormalAndSwitchPlayer();
+
+                // Скрываем панель
+                uiManager.HideAllEtherPanels();
+            }
+            
         };
-    }
-
-    // Метод для переключения в состояние установки круга через эфир
-    public void SwitchToPlaceCircleEtherState(CircleType type)
-    {
-        StateMachine.StartPlaceCircleEther(type);
-    }
-
-    // Метод для переключения в состояние активации круга через эфир
-    public void SwitchToActivateCircleEtherState(CircleType type)
-    {
-        StateMachine.StartActivateCircleEther(type);
     }
 
     public void SelectCircleType(CircleType type)
     {
         selectedCircleType = type;
         uiManager.UpdateCircleTypeButtons(type);
-        Debug.Log($"Выбран тип круга: {type}");
+        //Debug.Log($"Выбран тип круга: {type}");
     }
 
     // Главный обработчик кликов по клеткам
@@ -166,12 +188,27 @@ public class GameManager : MonoBehaviour
             mainGameState.StartTargetSelection(activator, targets);
         }
     }
+    public void StartTargetCellsSelectionEther(Circle activator, List<Vector2Int> targetCells)
+    {
+        if (StateMachine.CurrentState is MainGameState mainGameState)
+        {
+            mainGameState.StartTargetCellsSelectionEther(activator, targetCells);
+        }
+    }
+
 
     public void StartBarrierSelection(Circle blueCircle, List<Vector2Int> positions)
     {
         if (StateMachine.CurrentState is MainGameState mainGameState)
         {
             mainGameState.StartBarrierSelection(blueCircle, positions);
+        }
+    }
+    public void StartBarrierCellsSelectionEther(Circle blueCircle, List<Vector2Int> positions)
+    {
+        if (StateMachine.CurrentState is MainGameState mainGameState)
+        {
+            mainGameState.StartBarrierCellsSelectionEther(blueCircle, positions);
         }
     }
 
@@ -182,6 +219,15 @@ public class GameManager : MonoBehaviour
             mainGameState.StartGreenReproduction(greenCircle, positions);
         }
     }
+    public void StartGreenReproductionEther(Circle greenCircle, List<Vector2Int> positions)
+    {
+        if (StateMachine.CurrentState is MainGameState mainGameState)
+        {
+            mainGameState.StartGreenReproductionEther(greenCircle, positions);
+        }
+    }
+
+    
 
     private void OnDestroy()
     {

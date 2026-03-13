@@ -31,8 +31,6 @@ public static class GameLogger
         currentSessionLog.AppendLine();
         
         initialized = true;
-        
-        Debug.Log($"GameLogger: лог будет сохранён в {logFilePath}");
     }
     
     // Запись события в лог

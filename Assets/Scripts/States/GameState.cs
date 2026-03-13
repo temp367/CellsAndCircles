@@ -40,5 +40,5 @@ public abstract class GameState
     // Обновление каждый кадр (если нужно)
     public virtual void Update() { }
     public virtual void StartPlaceCircleEther(CircleType type) {}
-    public virtual void StartActivateCircleEther(CircleType type) {}
+    public virtual void StartActivateCircleEther() {}
 }

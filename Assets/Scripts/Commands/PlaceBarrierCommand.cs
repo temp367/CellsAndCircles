@@ -7,9 +7,7 @@ public class PlaceBarrierCommand : Command
     public CircleType Type { get; private set; }
     
     private GridManager grid;
-    private bool placed = false;
 
-    
     public PlaceBarrierCommand(int x, int y, int ownerPlayer, GridManager grid) : base(ownerPlayer)
     {
         this.X = x;
@@ -17,24 +15,18 @@ public class PlaceBarrierCommand : Command
         this.grid = grid;
     }
     
-    public override void Execute()
+    public override bool Execute()
     {
-        if (!placed)
+        if (!executed)
         {
-            placed = grid.PlaceBarrier(X, Y, OwnerPlayer, grid.CurrentTurn);
-            if (placed)
-                Debug.Log($"PlaceBarrierCommand: барьер установлен на ({X},{Y})");
+            executed = grid.PlaceBarrier(X, Y, OwnerPlayer, grid.CurrentTurn);
         }
+
+        return executed;
     }
     
     public override void Undo()
     {
-        if (placed)
-        {
-            grid.RemoveBarrierAt(X, Y);
-            placed = false;
-            Debug.Log($"PlaceBarrierCommand: барьер удалён");
-        }
     }
     
     public override string GetDescription()

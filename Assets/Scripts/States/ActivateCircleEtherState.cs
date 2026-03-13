@@ -3,11 +3,8 @@ using UnityEngine;
 
 public class ActivateCircleEtherState : MainGameSubState
 {
-    private CircleType typeToPlace;
-    
-    public ActivateCircleEtherState(MainGameState state, CircleType type) : base(state)
+    public ActivateCircleEtherState(MainGameState state) : base(state)
     {
-        typeToPlace = type;
     }
     
     public override void Enter()
@@ -22,8 +19,27 @@ public class ActivateCircleEtherState : MainGameSubState
     
     public override void HandleCellClick(int x, int y)
     {
-        // Проверка, можно ли поставить круг
-        // Создание команды PlaceCircleCommand
-        // Возврат в обычный режим
+        Circle circleOnCell = grid.GetCircleAt(x, y);
+
+        if (circleOnCell != null)
+        {
+            if (turn.IsOwnedByCurrentPlayer(circleOnCell) && circleOnCell.CanActivate)
+            {
+                bool hasTargets = circleOnCell.ActivateEther();
+            
+                if (!hasTargets)
+                {
+                    ui.ShowHint("Нет целей для активации");
+                }
+            }
+            else
+            {
+                ui.ShowHint("Этот круг нельзя активировать");
+            }
+        }
+        else
+        {
+            ui.ShowHint("Это пустая клетка");
+        }
     }
 }

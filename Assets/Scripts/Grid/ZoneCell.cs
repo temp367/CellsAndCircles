@@ -20,7 +20,6 @@ public class ZoneCell : MonoBehaviour
     // Этот метод будут вызывать из MouseInputHandler
     public void HandleClick()
     {
-        Debug.Log($"Клик по зоне {ZoneNumber}");
         OnZoneClicked?.Invoke(ZoneNumber, CenterX, CenterY);
     }
 }
