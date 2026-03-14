@@ -391,7 +391,7 @@ public class GridManager : MonoBehaviour, IInitializable
         Vector2Int oldPos = new Vector2Int(oldX, oldY);
         Vector2Int newPos = new Vector2Int(newX, newY);
         
-        if (placedCircles.ContainsKey(oldPos))
+        if (placedCircles.ContainsKey(oldPos) && !IsCellOccupied(newX, newY))
         {
             placedCircles.Remove(oldPos);
             placedCircles[newPos] = circle;

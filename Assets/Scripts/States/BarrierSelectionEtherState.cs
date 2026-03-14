@@ -5,8 +5,6 @@ public class BarrierSelectionEtherState : MainGameSubState
 {
     private Circle activatingCircle;
     private List<Vector2Int> possibleCells;
-
-    public static event System.Action<Command> OnCommandActivateBlueStatic;
     
     public BarrierSelectionEtherState(MainGameState state, Circle activator, List<Vector2Int> cells) : base(state)
     {
@@ -36,7 +34,7 @@ public class BarrierSelectionEtherState : MainGameSubState
             
             cmds.AddCommandToHistory(command, activatingCircle.Type, false, true);
 
-            OnCommandActivateBlueStatic?.Invoke(command);
+            GameServices.Ability.NotifyCommandCreated(command);
         }
         else
         {

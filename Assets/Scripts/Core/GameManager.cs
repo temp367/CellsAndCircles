@@ -100,23 +100,7 @@ public class GameManager : MonoBehaviour
             gridManager?.HandlePlayerChanged(player);
         };
 
-        PlaceCircleEtherState.OnCommandCreatedStatic += (command) => {
-            uiManager.ShowTriggerPlacePanel(true);
-            lastPendingCommand = command;
-        };
-
-        TargetSelectionEtherState.OnCommandActivateRedStatic += (command) =>
-        {
-            uiManager.ShowTriggerPlacePanel(true);
-            lastPendingCommand = command;
-        };
-        BarrierSelectionEtherState.OnCommandActivateBlueStatic += (command) =>
-        {
-            uiManager.ShowTriggerPlacePanel(true);
-            lastPendingCommand = command;
-        };
-        GreenReproductionEtherState.OnCommandActivateGreenStatic += (command) =>
-        {
+        GameServices.Ability.OnEtherCommandCreated += (command) => {
             uiManager.ShowTriggerPlacePanel(true);
             lastPendingCommand = command;
         };

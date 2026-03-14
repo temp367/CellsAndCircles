@@ -1,8 +1,11 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class AbilitySystem : MonoBehaviour, IInitializable
 {
+    public event Action<Command> OnEtherCommandCreated;
+
     public InitStage InitStage => InitStage.Abil;
 
     public void Initialize()
@@ -18,6 +21,8 @@ public class AbilitySystem : MonoBehaviour, IInitializable
     {
         stateMachine = machine;
     }
+
+    public void NotifyCommandCreated(Command command) => OnEtherCommandCreated?.Invoke(command);
     
     // Прокси-методы для вызова из кругов
     public void StartTargetSelection(Circle activator, List<Circle> targets)

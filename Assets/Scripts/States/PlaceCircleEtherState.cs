@@ -4,8 +4,6 @@ using UnityEngine;
 public class PlaceCircleEtherState : MainGameSubState
 {
     private CircleType typeToPlace;
-
-    public static event System.Action<Command> OnCommandCreatedStatic;
     
     public PlaceCircleEtherState(MainGameState state, CircleType type) : base(state)
     {
@@ -32,7 +30,8 @@ public class PlaceCircleEtherState : MainGameSubState
         // Создаём команду для установки круга
         Command command = new PlaceCircleCommand(x, y, typeToPlace, turn.CurrentPlayer, grid);   
         cmds.AddCommandToHistory(command, typeToPlace, false, true);
-        OnCommandCreatedStatic?.Invoke(command);
+        
+        GameServices.Ability.NotifyCommandCreated(command);
         
     }
     

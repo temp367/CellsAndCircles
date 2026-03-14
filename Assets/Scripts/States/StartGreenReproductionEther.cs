@@ -5,8 +5,6 @@ public class GreenReproductionEtherState : MainGameSubState
 {
     private Circle activatingCircle;
     private List<Vector2Int> possibleCells;
-
-    public static event System.Action<Command> OnCommandActivateGreenStatic;
     
     public GreenReproductionEtherState(MainGameState state, Circle activator, List<Vector2Int> cells) : base(state)
     {
@@ -36,7 +34,7 @@ public class GreenReproductionEtherState : MainGameSubState
             
             cmds.AddCommandToHistory(command, activatingCircle.Type, false, true);
 
-            OnCommandActivateGreenStatic?.Invoke(command);
+            GameServices.Ability.NotifyCommandCreated(command);
         }
         else
         {

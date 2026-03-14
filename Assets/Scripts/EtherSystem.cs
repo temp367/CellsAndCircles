@@ -9,20 +9,8 @@ public class EtherSystem : MonoBehaviour, IInitializable
     // Словарь для хранения связи триггеров и команд
     private Dictionary<TurnTrigger, Command> pendingCommands = new Dictionary<TurnTrigger, Command>();
     
-    // Ссылки на менеджеры
-    private GameManager gameManager;
-    private TurnManager turnManager;
-    private CommandSystem commandSystem;
-    private UIManager uiManager;
-    
     public void Initialize()
     {
-        // Получаем ссылки на менеджеры
-        gameManager = FindAnyObjectByType<GameManager>();
-        turnManager = FindAnyObjectByType<TurnManager>();
-        commandSystem = FindAnyObjectByType<CommandSystem>();
-        uiManager = FindAnyObjectByType<UIManager>();
-
         GameServices.Register(this);
 
         Debug.Log("EtherSystem initialized");
@@ -32,13 +20,14 @@ public class EtherSystem : MonoBehaviour, IInitializable
     public void AddCommandToEther(Command command, int player)
     {
         // Создаём триггер для игрока
-        TurnTrigger trigger = turnManager.CreateTriggerForCurrentPlayer();
+        TurnTrigger trigger = GameServices.Turn.CreateTriggerForCurrentPlayer();
         
         // Подписываемся на срабатывание триггера
         trigger.OnTurnReached += () => HandleTriggerActivated(trigger);
         
         // Сохраняем связку триггер-команда
         pendingCommands[trigger] = command;
+
         
         Debug.Log($"EtherSystem: команда добавлена в эфир для игрока {player}");
     }
