@@ -49,7 +49,7 @@ public class BlueCircle : Circle
         }
         
         // Запускаем выбор клетки
-        gameManager.StartBarrierSelection(this, emptyNeighbors);
+        abilitySystem.StartBarrierSelection(this, emptyNeighbors);
         return true;
     }
 
@@ -92,7 +92,7 @@ public class BlueCircle : Circle
         if (targetsNeibors.Count == 0) return false;
         else
         {
-            gameManager.StartBarrierCellsSelectionEther(this, targetsNeibors); 
+            abilitySystem.StartBarrierCellsSelectionEther(this, targetsNeibors); 
             
             return true;
         }

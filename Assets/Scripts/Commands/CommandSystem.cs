@@ -3,23 +3,17 @@ using UnityEngine;
 
 public class CommandSystem : MonoBehaviour, IInitializable
 {
-    public int InitPriority => 2; // после TurnManager
-    public string SystemName => "CommandSystem";
-    
-    private bool isInitialized = false;
+     public InitStage InitStage => InitStage.Command;
 
     private List<Command> history;
 
-    public bool Initialize()
+    public void Initialize()
     {
-        if (!isInitialized)
-        {
-           history = new List<Command>();
-           isInitialized = true;
-           return isInitialized; 
-        }
-        
-        return isInitialized; 
+        history = new List<Command>();
+
+        GameServices.Register(this);
+
+        Debug.Log("CommandSystem initialized");
     }
 
     public void AddCommandToHistory(Command command, CircleType typeToPlace, bool execute, bool isEther)

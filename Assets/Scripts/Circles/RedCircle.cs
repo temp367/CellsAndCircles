@@ -46,7 +46,7 @@ public class RedCircle : Circle
         if (targets.Count == 0) return false;
         else
         {
-            gameManager.StartTargetSelection(this, targets);
+            abilitySystem.StartTargetSelection(this, targets);
 
             return true;
         }
@@ -98,7 +98,7 @@ public class RedCircle : Circle
         if (targetCells.Count == 0) return false;
         else
         {
-            gameManager.StartTargetCellsSelectionEther(this, targetCells); 
+            abilitySystem.StartTargetCellsSelectionEther(this, targetCells); 
             
             return true;
         }

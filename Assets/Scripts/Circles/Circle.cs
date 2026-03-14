@@ -17,30 +17,23 @@ public abstract class Circle : MonoBehaviour
     public int GridY { get; protected set; }        // координата Y
 
     protected GridManager gridManager;
-    protected GameManager gameManager;
+    //protected GameManager gameManager;
+    protected AbilitySystem abilitySystem;
 
     public GameObject glowObject;
 
     public virtual bool CanBePushed => true;        // Можно толкать этот круг?
     public virtual bool CanActivate => true;        // У этого круга активируются способности? 
 
-    // Событие, которое вызывается, когда круг толкают
-    public System.Action<Circle> OnPushed;
-
-    public virtual void OnPushedBy(Circle pusher)
-    {
-        Debug.Log($"{GetType().Name} на ({GridX}, {GridY}) толкнули");
-        OnPushed?.Invoke(this);
-    }
-
     // Метод для инициализации (будет вызываться после создания)
-    public void Initialize(int x, int y, int player, GridManager gr, GameManager gam)
+    public void Initialize(int x, int y, int player, GridManager gr, GameManager gam, AbilitySystem abs)
     {
         GridX = x;
         GridY = y;
         Player = player;
         gridManager = gr;
-        gameManager = gam;
+        abilitySystem = abs;
+        //gameManager = gam;
     }
 
     public void UpdatePosition(int newX, int newY)

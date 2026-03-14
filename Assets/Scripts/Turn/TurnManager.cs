@@ -5,10 +5,8 @@ using UnityEngine;
 //Управление ходами
 public class TurnManager : MonoBehaviour, IInitializable
 {
-    public int InitPriority => 1; // после GridManager
-    public string SystemName => "TurnManager";
-    
-    private bool isInitialized = false;
+    public InitStage InitStage => InitStage.Gameplay;
+
 
     private int startingPlayer = 1; // игрок, который ходит первым
 
@@ -24,29 +22,14 @@ public class TurnManager : MonoBehaviour, IInitializable
     public System.Action<int> OnPlayerChanged;  // Событие для оповещения о смене игрока
 
     // Вызывается из GameManager после старта
-    public bool Initialize()
+    public void Initialize()
     {
-        try
-        {
-            if (!isInitialized)
-            {
-                currentPlayer = startingPlayer;
-                OnPlayerChanged?.Invoke(currentPlayer);
+        currentPlayer = startingPlayer;
+        OnPlayerChanged?.Invoke(currentPlayer);
 
-                isInitialized = true;
+        GameServices.Register(this);
 
-                return isInitialized;   
-            }
-            else
-            {
-                return isInitialized;    
-            }
-        }
-        catch(Exception e)
-        {
-            Debug.LogError($"{this.name}: ошибка инициализации - {e.Message}");
-            return isInitialized;
-        }
+        Debug.Log("TurnManager initialized");
     }
 
     // Смена игрока

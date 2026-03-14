@@ -42,49 +42,32 @@ public class GridManager : MonoBehaviour, IInitializable
     public int CurrentTurn => currentTurn;
 
 
-    public int InitPriority => 0; // самая первая - сетка нужна всем
-    public string SystemName => "GridManager";
-    
-    private bool isInitialized = false;
+    public InitStage InitStage => InitStage.Grid;
 
-    public bool Initialize()
+
+    public void Initialize()
     {
-        try
+        // Инициализация словарей
+        placedCircles = new Dictionary<Vector2Int, Circle>();
+        barriers = new Dictionary<Vector2Int, Barrier>();
+        originalCellColors = new Dictionary<Vector2Int, Color>();
+        prefabsByType = new Dictionary<CircleType, GameObject>();
+
+        // Заполняем маппинг префабов
+        foreach (var mapping in prefabMappings)
         {
-            if (!isInitialized)
+            if (mapping.prefab != null && !prefabsByType.ContainsKey(mapping.type))
             {
-                // Инициализация словарей
-                placedCircles = new Dictionary<Vector2Int, Circle>();
-                barriers = new Dictionary<Vector2Int, Barrier>();
-                originalCellColors = new Dictionary<Vector2Int, Color>();
-                prefabsByType = new Dictionary<CircleType, GameObject>();
-
-                // Заполняем маппинг префабов
-                foreach (var mapping in prefabMappings)
-                {
-                    if (mapping.prefab != null && !prefabsByType.ContainsKey(mapping.type))
-                    {
-                        prefabsByType.Add(mapping.type, mapping.prefab);
-                    }
-                }
-                
-                GenerateGrid(); // сетка
-                GenerateZones(); // зоны
-
-                isInitialized = true;
-
-                return isInitialized;
-            }
-            else
-            {
-                return isInitialized;   
+                prefabsByType.Add(mapping.type, mapping.prefab);
             }
         }
-        catch (System.Exception e)
-        {
-            Debug.LogError($"{this.name}: ошибка инициализации - {e.Message}");
-            return isInitialized;
-        }
+        
+        GenerateGrid(); // сетка
+        GenerateZones(); // зоны
+
+        GameServices.Register(this);
+
+        Debug.Log("GridManager initialized");
     }
 
     void GenerateGrid()
@@ -174,7 +157,7 @@ public class GridManager : MonoBehaviour, IInitializable
         }
         
         // Инициализация круга
-        сircle.Initialize(x, y, player, this, gameManager);
+        сircle.Initialize(x, y, player, this, gameManager, gameManager.abilitySystem);
 
         // Внесение круга в словарь 
         Vector2Int pos = new Vector2Int(x, y);

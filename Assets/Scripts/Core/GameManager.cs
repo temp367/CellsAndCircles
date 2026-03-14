@@ -3,6 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+public enum InitStage
+{
+    Core = 0,        // базовые системы
+    Grid = 10,       // поле и клетки
+    Gameplay = 20,   // игровые системы
+    Command = 21,   // команды действий
+    Abil = 22,      // управление способностями юнитов
+    Ethir = 23,     // управление эфиром
+    UI = 30          // интерфейс
+}
+
 public class GameManager : MonoBehaviour
 {
     public CircleType selectedCircleType = CircleType.Red;
@@ -11,11 +22,11 @@ public class GameManager : MonoBehaviour
     public GridManager gridManager;
     public TurnManager turnManager;
     public CommandSystem commandSystem;
+    public AbilitySystem abilitySystem;
     public UIManager uiManager;
     public EtherSystem etherSystem;
 
     private List<IInitializable> systems = new List<IInitializable>(); // Список всех инициализируемых систем
-    private bool allSystemsInitialized = false;
 
     [Header("State Machine")]
     public GameStateMachine StateMachine { get; private set; }
@@ -27,54 +38,43 @@ public class GameManager : MonoBehaviour
         // Собираем все системы
         RegisterSystems();
         
+        InitializeSystems();
         // Запускаем инициализацию и игру
-        if(InitializeSystems()) StartGame();
+        StartGame();
     }
 
-     private void RegisterSystems()
+    private void RegisterSystems()
     {
-        if (gridManager != null) systems.Add(gridManager);
-        else Debug.LogError($"{gridManager.name}: GridManager не найден!");
+        TryRegister(gridManager);
+        TryRegister(turnManager);
+        TryRegister(commandSystem);
+        TryRegister(abilitySystem);
+        TryRegister(etherSystem);
+        TryRegister(uiManager);
+    }
+    
+    void TryRegister(IInitializable system)
+    {
+        if(system == null)
+        {
+            Debug.LogError($"{system} missing!");
+            return;
+        }
 
-        if (turnManager != null) systems.Add(turnManager);
-        else Debug.LogError($"{turnManager.name}: TurnManager не найден!");
-
-        if (commandSystem != null) systems.Add(commandSystem);
-        else Debug.LogError($"{name}: CommandSystem не найден!");
-
-        if (uiManager != null) systems.Add(uiManager);
-        else Debug.LogError($"{uiManager.name}: UiManager не найден!");
-        
-        if (etherSystem != null) systems.Add(etherSystem);
-        else Debug.LogError($"{etherSystem.name}: EtherSystem не найден!");
-        
-        // Сортируем по приоритету
-        systems.Sort((a, b) => a.InitPriority.CompareTo(b.InitPriority));
+        systems.Add(system);
     }
 
-    private bool InitializeSystems()
+    private void InitializeSystems()
     {
-        try
-        {
-            //Инициализация зависимости
-            foreach (var system in systems) system.Initialize();
+        systems.Sort((a,b) => a.InitStage.CompareTo(b.InitStage));
+        foreach (var system in systems) system.Initialize();
 
-            // Создаём машину состояний
-            StateMachine = new GameStateMachine(this);
-
-            // Подписываемся на события UI 
-            SubscribeToEvents();
+        StateMachine = new GameStateMachine(this);
+        GameServices.Ability.SetStateMachine(StateMachine);
+        // Подписываемся на события UI 
+        SubscribeToEvents();
         
-        }
-        catch(Exception e)
-        {
-            Debug.LogError($"{this.name}: {e.Message}");
-            return allSystemsInitialized;
-        }
-
-            allSystemsInitialized = true;
-
-            return allSystemsInitialized;
+        
     }
     
     private void StartGame()
@@ -179,55 +179,6 @@ public class GameManager : MonoBehaviour
     {
         StateMachine.ChangeState(new MainGameState(this));
     }
-
-    // Прокси-методы для вызова из кругов
-    public void StartTargetSelection(Circle activator, List<Circle> targets)
-    {
-        if (StateMachine.CurrentState is MainGameState mainGameState)
-        {
-            mainGameState.StartTargetSelection(activator, targets);
-        }
-    }
-    public void StartTargetCellsSelectionEther(Circle activator, List<Vector2Int> targetCells)
-    {
-        if (StateMachine.CurrentState is MainGameState mainGameState)
-        {
-            mainGameState.StartTargetCellsSelectionEther(activator, targetCells);
-        }
-    }
-
-
-    public void StartBarrierSelection(Circle blueCircle, List<Vector2Int> positions)
-    {
-        if (StateMachine.CurrentState is MainGameState mainGameState)
-        {
-            mainGameState.StartBarrierSelection(blueCircle, positions);
-        }
-    }
-    public void StartBarrierCellsSelectionEther(Circle blueCircle, List<Vector2Int> positions)
-    {
-        if (StateMachine.CurrentState is MainGameState mainGameState)
-        {
-            mainGameState.StartBarrierCellsSelectionEther(blueCircle, positions);
-        }
-    }
-
-    public void StartGreenReproduction(Circle greenCircle, List<Vector2Int> positions)
-    {
-        if (StateMachine.CurrentState is MainGameState mainGameState)
-        {
-            mainGameState.StartGreenReproduction(greenCircle, positions);
-        }
-    }
-    public void StartGreenReproductionEther(Circle greenCircle, List<Vector2Int> positions)
-    {
-        if (StateMachine.CurrentState is MainGameState mainGameState)
-        {
-            mainGameState.StartGreenReproductionEther(greenCircle, positions);
-        }
-    }
-
-    
 
     private void OnDestroy()
     {

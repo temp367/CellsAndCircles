@@ -53,23 +53,15 @@ public class UIManager : MonoBehaviour, IInitializable
     public System.Action OnNextMyTurnClicked;
     public System.Action OnBackClicked;
     
-    public int InitPriority => 3; 
-    public string SystemName => "UIManager";
-    
-    private bool isInitialized = false;
+    public InitStage InitStage => InitStage.UI;
 
-    public bool Initialize()
+    public void Initialize()
     {
-        if (!isInitialized)
-        {
-            InitUIEvents();
-            isInitialized = true;
-            return isInitialized;
-        }
-        else
-        {
-            return isInitialized;
-        }
+        InitUIEvents();
+
+        GameServices.Register(this);
+
+        Debug.Log("UIManager initialized");
     }
 
     private void InitUIEvents()

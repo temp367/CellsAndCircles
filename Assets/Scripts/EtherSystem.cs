@@ -4,10 +4,7 @@ using UnityEngine;
 
 public class EtherSystem : MonoBehaviour, IInitializable
 {
-    public int InitPriority => 4; // после UIManager
-    public string SystemName => "EtherSystem";
-    
-    private bool isInitialized = false;
+     public InitStage InitStage => InitStage.Ethir;
     
     // Словарь для хранения связи триггеров и команд
     private Dictionary<TurnTrigger, Command> pendingCommands = new Dictionary<TurnTrigger, Command>();
@@ -18,24 +15,17 @@ public class EtherSystem : MonoBehaviour, IInitializable
     private CommandSystem commandSystem;
     private UIManager uiManager;
     
-    public bool Initialize()
+    public void Initialize()
     {
-        if (!isInitialized)
-        {
-            // Получаем ссылки на менеджеры
-            gameManager = FindAnyObjectByType<GameManager>();
-            turnManager = FindAnyObjectByType<TurnManager>();
-            commandSystem = FindAnyObjectByType<CommandSystem>();
-            uiManager = FindAnyObjectByType<UIManager>();
-            
-            isInitialized = true;
-            
-            return isInitialized;
-        }
-        else
-        {
-            return isInitialized;
-        }
+        // Получаем ссылки на менеджеры
+        gameManager = FindAnyObjectByType<GameManager>();
+        turnManager = FindAnyObjectByType<TurnManager>();
+        commandSystem = FindAnyObjectByType<CommandSystem>();
+        uiManager = FindAnyObjectByType<UIManager>();
+
+        GameServices.Register(this);
+
+        Debug.Log("EtherSystem initialized");
     }
     
     // Добавить команду в эфир с созданием триггера

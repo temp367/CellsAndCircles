@@ -50,7 +50,7 @@ public class GreenCircle : Circle
         }
         
         // Запускаем выбор клетки
-        gameManager.StartGreenReproduction(this, emptyNeighbors);
+        abilitySystem.StartGreenReproduction(this, emptyNeighbors);
         return true;
     }
 
@@ -89,7 +89,7 @@ public class GreenCircle : Circle
         if (targetsNeibors.Count == 0) return false;
         else
         {
-            gameManager.StartGreenReproductionEther(this, targetsNeibors);
+            abilitySystem.StartGreenReproductionEther(this, targetsNeibors);
             
             return true;
         }
