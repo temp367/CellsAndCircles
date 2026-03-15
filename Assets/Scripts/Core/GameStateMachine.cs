@@ -18,8 +18,6 @@ public class GameStateMachine
     {
         string fromState = currentState?.GetType().Name ?? "null";
         string toState = newState.GetType().Name;
-
-        GameLogger.LogStateChange(fromState, toState);
         
         // Выходим из текущего состояния
         if (currentState != null)
@@ -42,6 +40,14 @@ public class GameStateMachine
         if (currentState != null)
         {
             currentState.StartPlaceCircleEther(type);
+        }
+    }
+
+    public void StartTriggerEther(TriggerKind kindTrig, CircleType? typeCirc, GameManager gm)
+    {
+        if (currentState != null)
+        {
+            currentState.StartTriggerEther(kindTrig, typeCirc, gm);
         }
     }
 

@@ -14,31 +14,36 @@ public class BarrierSelectionEtherState : MainGameSubState
     
     public override void Enter()
     {
-        Debug.Log("BarrierSelectionEtherState: выбор клетки для барьера");
-        grid.HighlightCells(possibleCells, Color.yellow); 
-        ui.ShowHint("Выберите клетку для записи барьера в эфир");
+        GameLog.Action($"ENTER {GetType().Name}");
+        GameServices.Grid.HighlightCells(possibleCells, Color.yellow); 
+        GameServices.Ui.ShowHint("Выберите клетку для записи барьера в эфир");
     }
     
     public override void Exit()
     {
-        grid.ClearHighlights();
+        GameLog.Action($"EXIT {GetType().Name}");
+        GameServices.Grid.ClearHighlights();
     }
     
     public override void HandleCellClick(int x, int y)
     {
+        GameLog.Action($"Player {GameServices.Turn.CurrentPlayer} click ({x},{y}) in {GetType().Name}");
+
         Vector2Int clickedPos = new Vector2Int(x, y);
         
         if (possibleCells.Contains(clickedPos))
         {
-            Command command = new PlaceBarrierCommand(x, y,turn.CurrentPlayer, grid);
-            
-            cmds.AddCommandToHistory(command, activatingCircle.Type, false, true);
+            Command command = new PlaceBarrierCommand(x, y,GameServices.Turn.CurrentPlayer, GameServices.Grid, true);
+            GameLog.Ether($"Create ether BarrierCommand from ({activatingCircle.GridX},{activatingCircle.GridY}) -> ({x},{y})");
+            GameServices.CommandSys.AddCommandToHistory(command, activatingCircle.Type, false, true);
 
-            GameServices.Ability.NotifyCommandCreated(command);
+            GameServices.Ability.NotifyEtherCommandCreated(command);
         }
         else
         {
-            ui.ShowHint("Нельзя выбрать");
+            GameLog.Error($"Invalid target ({x},{y}) for {GetType().Name}");
+
+            GameServices.Ui.ShowHint("Нельзя выбрать");
         }
     }
 }

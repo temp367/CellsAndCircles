@@ -31,10 +31,12 @@ public class GameManager : MonoBehaviour
     [Header("State Machine")]
     public GameStateMachine StateMachine { get; private set; }
 
-    private Command lastPendingCommand; // Храненит последнюю команду
+    public Command lastPendingCommand; // Храненит последнюю команду
 
     private void Awake()
     {
+        GameLog.Initialize();
+        
         // Собираем все системы
         RegisterSystems();
         
@@ -90,7 +92,12 @@ public class GameManager : MonoBehaviour
         uiManager.OnRestartClicked += RestartGame;
 
         uiManager.OnPlaceTypeConfirmed += (type) => {
-            StateMachine.StartPlaceCircleEther(type);
+            StateMachine.StartPlaceCircleEther(type); //При следующем клике по клетке команда запишится в массив
+        };
+
+        GameServices.Ui.OnTriggerTypeConfirmed += (trigKind, typeCirc) =>
+        {
+            StateMachine.StartTriggerEther(trigKind, typeCirc, this);
         };
 
         uiManager.OnActivateTypeConfirmed += StateMachine.StartActivateCircleEther;
@@ -101,37 +108,12 @@ public class GameManager : MonoBehaviour
         };
 
         GameServices.Ability.OnEtherCommandCreated += (command) => {
-            uiManager.ShowTriggerPlacePanel(true);
+            GameServices.Ui.SwitchEtherPanel(GameServices.Ui.etherTriggerPanel);
             lastPendingCommand = command;
         };
 
         uiManager.OnBackClicked += () => {
             Debug.Log("GameManager: отмена команды"); 
-        };
-
-        uiManager.OnNextMyTurnClicked += () => {
-            if (StateMachine.CurrentState is MainGameState mainGameState)
-            {
-                if (lastPendingCommand != null)
-                {
-                    etherSystem.AddCommandToEther(lastPendingCommand, turnManager.CurrentPlayer);
-                    
-                    Debug.Log($"Триггер активирован. Сработает в ваш следующий ход");
-                    
-                    // Очищаем временное хранение
-                    lastPendingCommand = null;
-                }
-                else
-                {
-                    uiManager.ShowHint($"Ход игрока {turnManager.CurrentPlayer}");
-                }
-
-                mainGameState.ReturnToNormalAndSwitchPlayer();
-
-                // Скрываем панель
-                uiManager.HideAllEtherPanels();
-            }
-            
         };
     }
 
@@ -139,14 +121,11 @@ public class GameManager : MonoBehaviour
     {
         selectedCircleType = type;
         uiManager.UpdateCircleTypeButtons(type);
-        //Debug.Log($"Выбран тип круга: {type}");
     }
 
     // Главный обработчик кликов по клеткам
     public void HandleCellClick(int x, int y)
     {
-        GameLogger.LogClick(x, y, "клетка");
-        
         // Передаём в текущее состояние
         StateMachine.HandleCellClick(x, y);
     }
@@ -154,7 +133,6 @@ public class GameManager : MonoBehaviour
      // Для кликов по зонам (вызывается из ZoneCell)
     public void HandleZoneClick(int zoneNumber, int zoneX, int zoneY)
     {
-        GameLogger.LogClick(zoneX, zoneY, $"зона {zoneNumber}");
         StateMachine.HandleZoneClick(zoneNumber, zoneX, zoneY);
     }
     
@@ -166,15 +144,11 @@ public class GameManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        GameLogger.Log("=== ИГРА ЗАВЕРШЕНА ===");
-        GameLogger.Shutdown();
+       
     }
 
     public void RestartGame()
     {
-        GameLogger.Log("=== ПЕРЕЗАПУСК ИГРЫ ===");
-        GameLogger.Shutdown(); // закрываем текущий лог
-        
         Debug.Log("Перезапуск игры...");
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }

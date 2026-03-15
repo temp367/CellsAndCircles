@@ -15,7 +15,7 @@ public class TargetSelectionState : MainGameSubState
     
     public override void Enter()
     {
-        Debug.Log("TargetSelectionState: выбор клетки для перемещения");
+        GameLog.Action($"ENTER {GetType().Name}");
         
         // Подсвечиваем цели
         List<Vector2Int> targetPositions = new List<Vector2Int>();
@@ -25,37 +25,52 @@ public class TargetSelectionState : MainGameSubState
             Debug.Log($"{target.GridX} {target.GridY}");
         }
         
-        grid.HighlightCells(targetPositions, Color.red);
+        GameServices.Grid.HighlightCells(targetPositions, Color.red);
         
-        ui.ShowHint("Выберите цель для толчка");
+        GameServices.Ui.ShowHint("Выберите цель для толчка");
     }
     
     public override void Exit()
     {
-        grid.ClearHighlights();
+        GameLog.Action($"EXIT {GetType().Name}");
+        GameServices.Grid.ClearHighlights();
     }
     
     public override void HandleCellClick(int x, int y)
     {
-        Circle clickedCircle = grid.GetCircleAt(x, y);
+        GameLog.Action($"Player {GameServices.Turn.CurrentPlayer} click ({x},{y}) in {GetType().Name}");
+        
+        Circle clickedCircle = GameServices.Grid.GetCircleAt(x, y);
 
         if (possibleTargets.Contains(clickedCircle) && clickedCircle.CanBePushed)
         {
-            Command command = new PushTargetCommand(activatingCircle, x, y, grid);
+            Command command = new PushTargetCommand(activatingCircle, x, y, false);
             
-            bool sucses = command.Execute();
-            cmds.AddCommandToHistory(command, activatingCircle.Type, sucses, false);
+            bool success = command.Execute();
+
+            GameLog.Action(success
+                ? $"SUCCESS target at ({x},{y})"
+                : $"FAILED target at ({x},{y})"
+            );
+
+            GameServices.CommandSys.AddCommandToHistory(command, activatingCircle.Type, success, false);
+
+            GameServices.Ability.NotifyGameCommandExecuted(command);
 
             mainGameState.ReturnToNormalAndSwitchPlayer();
         }
         else if(clickedCircle.GridX == activatingCircle.GridX && clickedCircle.GridY == activatingCircle.GridY)
         {
-            ui.ShowHint($"Ход игрока {turn.CurrentPlayer}");
+            GameLog.Action($"Player cancelled ability {GetType().Name}");
+
+            GameServices.Ui.ShowHint($"Ход игрока {GameServices.Turn.CurrentPlayer}");
             mainGameState.ReturnToNormal();
         }
         else
         {
-            ui.ShowHint("Это не цель");
+            GameLog.Error($"Invalid target ({x},{y}) for {GetType().Name}");
+
+            GameServices.Ui.ShowHint("Это не цель");
         }
     }
 }

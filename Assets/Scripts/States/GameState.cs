@@ -41,4 +41,5 @@ public abstract class GameState
     public virtual void Update() { }
     public virtual void StartPlaceCircleEther(CircleType type) {}
     public virtual void StartActivateCircleEther() {}
+    public virtual void StartTriggerEther(TriggerKind kindTrig, CircleType? type, GameManager gm) {}
 }

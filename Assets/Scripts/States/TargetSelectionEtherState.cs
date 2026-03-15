@@ -14,31 +14,34 @@ public class TargetSelectionEtherState : MainGameSubState
     
     public override void Enter()
     {
-        Debug.Log("TargetCellsEtherState: выбор клетки для перемещения в эфире");
-        grid.HighlightCells(possibleCells, Color.yellow); // жёлтый для эфира
-        ui.ShowHint("Выберите клетку для записи толчка в эфир");
+        GameLog.Action($"ENTER {GetType().Name}");
+        GameServices.Grid.HighlightCells(possibleCells, Color.yellow); // жёлтый для эфира
+        GameServices.Ui.ShowHint("Выберите клетку для записи толчка в эфир");
     }
     
     public override void Exit()
     {
-        grid.ClearHighlights();
+        GameLog.Action($"EXIT {GetType().Name}");
+        GameServices.Grid.ClearHighlights();
     }
     
     public override void HandleCellClick(int x, int y)
     {
+        GameLog.Action($"Player {GameServices.Turn.CurrentPlayer} click ({x},{y}) in {GetType().Name}");
+        
         Vector2Int clickedPos = new Vector2Int(x, y);
         
         if (possibleCells.Contains(clickedPos))
         {
-            Command command = new PushTargetCommand(activatingCircle, x, y, grid);
-            
-            cmds.AddCommandToHistory(command, activatingCircle.Type, false, true);
+            Command command = new PushTargetCommand(activatingCircle, x, y, true);
+            GameLog.Ether($"Create ether PushTargetCommand from ({activatingCircle.GridX},{activatingCircle.GridY}) -> ({x},{y})");
+            GameServices.CommandSys.AddCommandToHistory(command, activatingCircle.Type, false, true);
 
-            GameServices.Ability.NotifyCommandCreated(command);
+            GameServices.Ability.NotifyEtherCommandCreated(command);
         }
         else
         {
-            ui.ShowHint("Нельзя выбрать");
+            GameServices.Ui.ShowHint("Нельзя выбрать");
         }
     }
 }

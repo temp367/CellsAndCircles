@@ -7,7 +7,6 @@ public class TurnManager : MonoBehaviour, IInitializable
 {
     public InitStage InitStage => InitStage.Gameplay;
 
-
     private int startingPlayer = 1; // игрок, который ходит первым
 
     private int currentPlayer;
@@ -35,8 +34,6 @@ public class TurnManager : MonoBehaviour, IInitializable
     // Смена игрока
     public void SwitchPlayer()
     {
-        GameLogger.Log($"Смена хода: игрок {currentPlayer} -> игрок {(currentPlayer == 1 ? 2 : 1)}");
-
         // Переключаем игрока
         currentPlayer = (currentPlayer == 1) ? 2 : 1;
         // Оповещаем подписчиков
@@ -48,23 +45,6 @@ public class TurnManager : MonoBehaviour, IInitializable
 
 
         Debug.Log($"TurnManager: Ход игрока {currentPlayer}");
-    }
-
-    public TurnTrigger CreateTriggerForCurrentPlayer()
-    {
-        TurnTrigger trigger = new TurnTrigger(currentPlayer);
-        
-        OnPlayerChanged += (player) => {
-        trigger?.SwitchTurn(currentPlayer);
-        trigger?.CheckTurn(currentPlayer);
-        };
-
-        trigger.OnTurnReached += () => {
-            // Когда триггер срабатывает, оповещаем подписчиков
-            
-        };
-
-        return trigger;
     }
 
     // Проверка, является ли круг принадлежащим текущему игроку

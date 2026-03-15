@@ -9,37 +9,39 @@ public class ActivateCircleEtherState : MainGameSubState
     
     public override void Enter()
     {
-        Debug.Log($"ActivateCircleEtherState: вошли в состояние Enter()");
+        GameLog.Action($"ENTER {GetType().Name}");
     }
 
     public override void Exit()
     {
-        Debug.Log($"ActivateCircleEtherState: вышли из состояния Exit()");
+        GameLog.Action($"EXIT {GetType().Name}");
     }
     
     public override void HandleCellClick(int x, int y)
     {
-        Circle circleOnCell = grid.GetCircleAt(x, y);
+        GameLog.Action($"Player {GameServices.Turn.CurrentPlayer} click ({x},{y}) in {GetType().Name}");
+        
+        Circle circleOnCell = GameServices.Grid.GetCircleAt(x, y);
 
         if (circleOnCell != null)
         {
-            if (turn.IsOwnedByCurrentPlayer(circleOnCell) && circleOnCell.CanActivate)
+            if (GameServices.Turn.IsOwnedByCurrentPlayer(circleOnCell) && circleOnCell.CanActivate)
             {
                 bool hasTargets = circleOnCell.ActivateEther();
             
                 if (!hasTargets)
                 {
-                    ui.ShowHint("Нет целей для активации");
+                    GameServices.Ui.ShowHint("Нет целей для активации");
                 }
             }
             else
             {
-                ui.ShowHint("Этот круг нельзя активировать");
+                GameServices.Ui.ShowHint("Этот круг нельзя активировать");
             }
         }
         else
         {
-            ui.ShowHint("Это пустая клетка");
+            GameServices.Ui.ShowHint("Это пустая клетка");
         }
     }
 }

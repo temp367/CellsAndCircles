@@ -4,60 +4,77 @@ using TMPro;
 
 public class UIManager : MonoBehaviour, IInitializable
 {
-    [Header("Лог")]
-    public TextMeshProUGUI etherQueueText;
-
-    [Header("Кнопки выбора типа круга")]
+    [Header("Кнопки выбора типа круга для хода")]
     public Button redButton;
     public Button blueButton;
     public Button greenButton;
 
     [Header("Управление сессиями")]
     public Button restartButton;
-    
-    [Header("Управление эфиром")]
-    public Button etherButton;
-    public Button cancelEtherButton;
 
-    [Header("Панели эфира")]
+    [Header("Ячейки эфира")]
+    public GameObject etherCellsPanel;
+    public Button firstEButton;
+    public Button secondEButton;
+    public Button threedEButton;
+
+    [Header("Панель выбора команды для эфира")]
     public GameObject etherMenuPanel;          // панель выбора действия
     public Button etherPlaceButton;            // кнопка "Поставить шар"
     public Button etherActivateButton;         // кнопка "Активировать шар"
     
-    public GameObject etherPlacePanel;         // панель выбора типа для установки
-    [Header("Кнопки выбора типа для установки")]
+    [Header("Панель выбора типа круга для команды эфира")]
+    public GameObject etherPutPanel;         // панель выбора типа для установки
     public Button placeRedButton;
     public Button placeBlueButton;
     public Button placeGreenButton;
 
-    public Button backFromPlaceButton;         // кнопка назад
+    [Header("Панель выбора триггера")]
+    public GameObject etherTriggerPanel;      
+    public Button enemyPutButton;           
+    public Button iPutButton;
+    public Button enemyActivateButton;
     
 
-    [Header("Панель выбора триггера")]
-    public GameObject triggerPlacePanel;      
-    public Button nextMyTurnButton;            // кнопка 1-го триггера             
-    public Button backButton;  
+    [Header("Панель выбора типа круга для триггера")]
+    public GameObject etherTriggerTypePanel;
+    public Button triggerRedButton;
+    public Button triggerBlueButton;
+    public Button triggerGreenButton;
+    public Button triggerAnyButton;
+
+    [Header("Панель выбора координаты круга для триггера")]
+    public GameObject etherTriggerCoordinataPanel;
+    public Button anyCoordinatButton;
+
 
     [Header("Тексты")]
     public TextMeshProUGUI playerTurnText;     // текст текущего игрока
     public TextMeshProUGUI etherHintText;      // текст подсказки для эфира
+    public Button backButton; 
 
     
     private CircleType selectedPlaceType = CircleType.Red; // Текущий выбранный тип для установки
+    private GameObject currentEtherPanel;
 
     // События для связи с GameManager
     public System.Action<CircleType> OnCircleTypeSelected;
     public System.Action OnRestartClicked;
     public System.Action<CircleType> OnPlaceTypeConfirmed;
+    public System.Action<TriggerKind, CircleType?> OnTriggerTypeConfirmed;
     public System.Action OnActivateTypeConfirmed;
-    public System.Action OnNextMyTurnClicked;
     public System.Action OnBackClicked;
+
+    private CircleType? selectedTypeForTrigger;
+    private TriggerKind currentTriggerKind;
     
     public InitStage InitStage => InitStage.UI;
 
     public void Initialize()
     {
         InitUIEvents();
+
+        currentEtherPanel = etherCellsPanel;
 
         GameServices.Register(this);
 
@@ -77,43 +94,101 @@ public class UIManager : MonoBehaviour, IInitializable
         placeBlueButton.onClick.AddListener(() => OnPlaceTypeSelected(CircleType.Blue));
         placeGreenButton.onClick.AddListener(() => OnPlaceTypeSelected(CircleType.Green));
 
+        
+        //Кнопки для выбора типа круга триггера
+        triggerRedButton.onClick.AddListener(() =>
+        {
+            OnTriggerTypeSelected(CircleType.Red);
+            SwitchEtherPanel(etherTriggerCoordinataPanel);
+        });
+
+        triggerBlueButton.onClick.AddListener(() =>
+        {
+            OnTriggerTypeSelected(CircleType.Blue);
+            SwitchEtherPanel(etherTriggerCoordinataPanel);
+        });
+
+        triggerGreenButton.onClick.AddListener(() =>
+        {
+            OnTriggerTypeSelected(CircleType.Green);
+            SwitchEtherPanel(etherTriggerCoordinataPanel);
+        });
+
+        triggerAnyButton.onClick.AddListener(() =>
+        {
+            OnTriggerTypeSelected(null);
+            SwitchEtherPanel(etherTriggerCoordinataPanel);
+        });
+
+        // Кнопки выбора триггера для команды эфира
+        enemyPutButton.onClick.AddListener(() =>
+        {
+            currentTriggerKind = TriggerKind.EnemyPlaceCircle;
+            SwitchEtherPanel(etherTriggerTypePanel);
+        });
+
+        iPutButton.onClick.AddListener(() =>
+        {
+            currentTriggerKind = TriggerKind.SelfPlaceCircle;
+            SwitchEtherPanel(etherTriggerTypePanel);
+        });
+
+        enemyActivateButton.onClick.AddListener(() =>
+        {
+            currentTriggerKind = TriggerKind.enemyActivate;
+            SwitchEtherPanel(etherTriggerTypePanel);
+        });
+
         // Управление панелью эфира
-        etherButton.onClick.AddListener(() => ShowEtherMenu(true));
-        cancelEtherButton.onClick.AddListener(() => ShowEtherMenu(false));
+        firstEButton.onClick.AddListener(() => {
+            SwitchEtherPanel(etherMenuPanel);
+        });
+
+        secondEButton.onClick.AddListener(() => {
+            SwitchEtherPanel(etherMenuPanel);
+        });
+        
+        threedEButton.onClick.AddListener(() => {
+            SwitchEtherPanel(etherMenuPanel);
+        });
+        
 
         //  Переход к панелям Place
         etherPlaceButton.onClick.AddListener(() => {
-            ShowEtherMenu(false);      
-            ShowEtherPlacePanel(true); 
+            SwitchEtherPanel(etherPutPanel);
         });
+
         etherActivateButton.onClick.AddListener(() => {
-            ShowEtherMenu(false);          
             OnActivateTypeSelected();
         });
     
         // Кнопки навигации внутри панелей
-        backFromPlaceButton.onClick.AddListener(() => {
-            ShowEtherPlacePanel(false);
-            ShowEtherMenu(true); 
+        backButton.onClick.AddListener(() => {
         });
-
-        nextMyTurnButton.onClick.AddListener(() => OnNextMyTurnClicked?.Invoke());
-        backButton.onClick.AddListener(() => OnBackClicked?.Invoke());
     }
 
-    public void ShowTriggerPlacePanel(bool show)
+    public void SwitchEtherPanel(GameObject newPanel)
     {
-        if (triggerPlacePanel != null)
+        if (currentEtherPanel != null)
         {
-            triggerPlacePanel.SetActive(show);        
+            currentEtherPanel.SetActive(false);
+        }
+            
+        currentEtherPanel = newPanel;
+
+        if (currentEtherPanel != null)
+        {
+            Debug.Log("UI Panel → " + currentEtherPanel.name);
+            currentEtherPanel.SetActive(true);   
         }
     }
-    
+
     public void HideAllEtherPanels()
     {
-        ShowEtherMenu(false);
-        ShowEtherPlacePanel(false);
-        ShowTriggerPlacePanel(false); 
+        if (currentEtherPanel != null)
+            currentEtherPanel.SetActive(false);
+
+        currentEtherPanel = null;
     }
 
     private void OnPlaceTypeSelected(CircleType type)
@@ -122,18 +197,25 @@ public class UIManager : MonoBehaviour, IInitializable
 
         // Визуально подсвечиваем выбранную кнопку
         UpdatePlaceTypeButtons(type);
-
-        ShowEtherPlacePanel(false);
-        ShowHint("Выбери клетку для установки");
-            
+    
         OnPlaceTypeConfirmed?.Invoke(selectedPlaceType);
+
+        ShowHint("Выбери клетку для установки");
+    }
+
+    private void OnTriggerTypeSelected(CircleType? type)
+    {
+        selectedTypeForTrigger = type;
+        OnTriggerTypeConfirmed?.Invoke(currentTriggerKind, selectedTypeForTrigger);
+
+        ShowHint("Можешь Выбрать клетку или оставить любую");
     }
 
     private void OnActivateTypeSelected()
     {
-        ShowHint("Выбери клетку активации круга");
-            
         OnActivateTypeConfirmed?.Invoke();
+        
+        ShowHint("Выбери клетку активации круга");
     }
 
     // Подсветка выбранной кнопки в панели Place
@@ -164,20 +246,6 @@ public class UIManager : MonoBehaviour, IInitializable
         greenButton.interactable = (selectedType != CircleType.Green);
     }
 
-    // Показать/скрыть основную панель эфира
-    public void ShowEtherMenu(bool show)
-    {
-        if (etherMenuPanel != null)
-            etherMenuPanel.SetActive(show);
-    }
-
-    // Показать/скрыть панель установки круга
-    public void ShowEtherPlacePanel(bool show)
-    {
-        if (etherPlacePanel != null)
-            etherPlacePanel.SetActive(show);
-    }
-
     // Показать подсказку
     public void ShowHint(string hint)
     {
@@ -190,8 +258,9 @@ public class UIManager : MonoBehaviour, IInitializable
 
     public void GetMainGameView()
     {
-        etherButton.interactable = true;
-        cancelEtherButton.interactable = true;
+        firstEButton.interactable = true;
+        secondEButton.interactable = true;
+        threedEButton.interactable = true;
         redButton.interactable = true;
         blueButton.interactable = true;
         greenButton.interactable = true;

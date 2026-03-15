@@ -14,31 +14,34 @@ public class GreenReproductionEtherState : MainGameSubState
     
     public override void Enter()
     {
-        Debug.Log("StartGreenReproductionEther: выбор клетки для размножения");
-        grid.HighlightCells(possibleCells, Color.yellow); 
-        ui.ShowHint("Выберите клетку для записи деления в эфир");
+        GameLog.Action($"ENTER {GetType().Name}");
+        GameServices.Grid.HighlightCells(possibleCells, Color.yellow); // жёлтый для эфира
+        GameServices.Ui.ShowHint("Выберите клетку для записи деления в эфир");
     }
     
     public override void Exit()
     {
-        grid.ClearHighlights();
+        GameLog.Action($"EXIT {GetType().Name}");
+        GameServices.Grid.ClearHighlights();
     }
     
     public override void HandleCellClick(int x, int y)
     {
+        GameLog.Action($"Player {GameServices.Turn.CurrentPlayer} click ({x},{y}) in {GetType().Name}");
+        
         Vector2Int clickedPos = new Vector2Int(x, y);
         
         if (possibleCells.Contains(clickedPos))
         {
-            Command command = new ReproduceCommand(x, y, CircleType.Green, turn.CurrentPlayer, grid, activatingCircle);
-            
-            cmds.AddCommandToHistory(command, activatingCircle.Type, false, true);
+            Command command = new ReproduceCommand(x, y, CircleType.Green, GameServices.Turn.CurrentPlayer, GameServices.Grid, activatingCircle, true);
+            GameLog.Ether($"Create ether ReproduceCommand from ({activatingCircle.GridX},{activatingCircle.GridY}) -> ({x},{y})");
+            GameServices.CommandSys.AddCommandToHistory(command, activatingCircle.Type, false, true);
 
-            GameServices.Ability.NotifyCommandCreated(command);
+            GameServices.Ability.NotifyEtherCommandCreated(command);
         }
         else
         {
-            ui.ShowHint("Нельзя выбрать");
+            GameServices.Ui.ShowHint("Нельзя выбрать");
         }
     }
 }

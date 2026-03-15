@@ -2,17 +2,15 @@ using UnityEngine;
 
 public class PushTargetCommand : Command
 {
-    private Circle pusher;
+    public Circle Activator{ get; private set; }
     private int oldX;
     private int oldY;
     public int NewX { get; private set; }
     public int NewY { get; private set; }
-    private GridManager grid;
     
-    public PushTargetCommand(Circle pusher, int xOld, int yOld, GridManager grid) : base(pusher.Player)
+    public PushTargetCommand(Circle pusher, int xOld, int yOld, bool isEtherCommand) : base(pusher.Player, isEtherCommand)
     {
-        this.pusher = pusher;
-        this.grid = grid;
+        this.Activator = pusher;
         
         oldX = xOld;
         oldY = yOld;
@@ -28,9 +26,9 @@ public class PushTargetCommand : Command
     {
         if (!executed)
         {
-            Circle circlePushed = grid.GetCircleAt(oldX, oldY);
+            Circle circlePushed = GameServices.Grid.GetCircleAt(oldX, oldY);
 
-            executed = grid.MoveCircle(oldX, oldY, NewX, NewY, circlePushed);      
+            executed = GameServices.Grid.MoveCircle(oldX, oldY, NewX, NewY, circlePushed);      
         }
 
         return executed;

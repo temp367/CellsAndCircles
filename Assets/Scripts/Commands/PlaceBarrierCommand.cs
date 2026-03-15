@@ -8,7 +8,7 @@ public class PlaceBarrierCommand : Command
     
     private GridManager grid;
 
-    public PlaceBarrierCommand(int x, int y, int ownerPlayer, GridManager grid) : base(ownerPlayer)
+    public PlaceBarrierCommand(int x, int y, int ownerPlayer, GridManager grid,bool isEtherCommand) : base(ownerPlayer, isEtherCommand)
     {
         this.X = x;
         this.Y = y;

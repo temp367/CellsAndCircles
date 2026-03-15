@@ -23,10 +23,6 @@ public class CommandSystem : MonoBehaviour, IInitializable
         
         // Логируем в нужном формате
         string logEntry = $"Игрок:{command.OwnerPlayer}_Действие:{GetActionDescription(command)}_Тип:{typeToPlace}_координата:{GetCoordinates(command)}";
-        
-        GameLogger.Log(logEntry);
-        
-        //OnCommandAddedToHistory?.Invoke(command);
     }
     
     private string GetActionDescription(Command command)

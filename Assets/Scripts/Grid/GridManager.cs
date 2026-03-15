@@ -439,9 +439,6 @@ public class GridManager : MonoBehaviour, IInitializable
 
             // Уничтожаем GameObject
             Destroy(circle.gameObject);
-
-            // Логируем в файл
-            GameLogger.Log($"GridManager: удалён круг {circle.Type} на ({x}, {y})");
         }
         else
         {

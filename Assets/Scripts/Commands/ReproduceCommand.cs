@@ -10,15 +10,15 @@ public class ReproduceCommand : Command
     private int y;
     private CircleType type;
     private GridManager grid;
-    private Circle parentCircle;
+    public Circle Activator{ get; private set; }
     
-    public ReproduceCommand(int x, int y, CircleType type, int ownerPlayer, GridManager grid, Circle parent) : base(ownerPlayer)
+    public ReproduceCommand(int x, int y, CircleType type, int ownerPlayer, GridManager grid, Circle parent, bool isEtherCommand) : base(ownerPlayer, isEtherCommand)
     {
         this.x = x;
         this.y = y;
         this.type = type;
         this.grid = grid;
-        this.parentCircle = parent;
+        this.Activator = parent;
     }
     
     public override bool Execute()

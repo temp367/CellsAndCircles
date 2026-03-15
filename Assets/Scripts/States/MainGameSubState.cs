@@ -4,18 +4,10 @@ using UnityEngine;
 public abstract class MainGameSubState
 {
     protected MainGameState mainGameState;
-    protected GridManager grid;
-    protected TurnManager turn;
-    protected UIManager ui;
-    protected CommandSystem cmds;
     
     public MainGameSubState(MainGameState state)
     {
         mainGameState = state;
-        grid = state.Grid;
-        turn = state.Turn;
-        ui = state.UI;
-        cmds = state.Cmds;
     }
     
     public abstract void Enter();

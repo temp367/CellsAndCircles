@@ -2,26 +2,32 @@ public class PlaceCircleCommand : Command
 {
     public int X { get; private set; }
     public int Y { get; private set; }
+    public CircleType Type { get; private set; }
     
-    private CircleType type;
-    private GridManager grid;
-    private Circle createdCircle;
     
-    public PlaceCircleCommand(int x, int y, CircleType type, int ownerPlayer, GridManager grid) : base(ownerPlayer)
+    public PlaceCircleCommand(int x, int y, CircleType type, int ownerPlayer, bool isEtherCommand) : base(ownerPlayer, isEtherCommand)
     {
         this.X = x;
         this.Y = y;
-        this.type = type;
-        this.grid = grid;
+        Type = type;
     }
     
     public override bool Execute()
     {
         if (!executed)
         {
-            bool sucses = grid.PlaceCircle(X, Y, OwnerPlayer, type);
+            GameLog.Command($"Player {OwnerPlayer} PLACE {Type} circle at ({X},{Y})");
 
-            if(sucses) createdCircle =  grid.GetCircleAt(X, Y);
+            bool sucses = GameServices.Grid.PlaceCircle(X, Y, OwnerPlayer, Type);
+
+            if(sucses) 
+            {
+                GameLog.Action("Command executed successfully");
+            }
+            else
+            {
+                GameLog.Error($"Command FAILED (cell occupied) ({X},{Y})");
+            }
             
             executed = true;
         }
@@ -31,16 +37,11 @@ public class PlaceCircleCommand : Command
     
     public override void Undo()
     {
-        if (executed && createdCircle != null)
-        {
-            grid.RemoveCircle(createdCircle);
-            executed = false;
-            UnityEngine.Debug.Log($"PlaceCircleCommand: отменён");
-        }
+        
     }
     
     public override string GetDescription()
     {
-        return $"Поставить {type} на ({X},{Y})";
+        return $"Поставить {Type} на ({X},{Y})";
     }
 }

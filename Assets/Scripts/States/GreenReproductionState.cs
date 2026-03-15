@@ -15,38 +15,54 @@ public class GreenReproductionState : MainGameSubState
     
     public override void Enter()
     {
+        GameLog.Action($"ENTER {GetType().Name}");
         // Подсвечиваем доступные клетки
-        grid.HighlightCells(possiblePositions, Color.green);
+        GameServices.Grid.HighlightCells(possiblePositions, Color.green);
         
-        ui.ShowHint("Выберите клетку для размножения");
+        GameServices.Ui.ShowHint("Выберите клетку для размножения");
     }
     
     public override void Exit()
     {
-        Debug.Log("GreenReproductionState: выходим из режима размножения");
-        grid.ClearHighlights();
+        GameLog.Action($"EXIT {GetType().Name}");
+        GameServices.Grid.ClearHighlights();
     }
     
     public override void HandleCellClick(int x, int y)
     {
+        GameLog.Action($"Player {GameServices.Turn.CurrentPlayer} click ({x},{y}) in {GetType().Name}");
+        
         Vector2Int clickedPos = new Vector2Int(x, y);
         
         if (possiblePositions.Contains(clickedPos))
         {
-            Command command = new ReproduceCommand(x, y, CircleType.Green, turn.CurrentPlayer, grid, activatingCircle);
+            Command command = new ReproduceCommand(x, y, CircleType.Green, GameServices.Turn.CurrentPlayer, GameServices.Grid, activatingCircle, false);
             
-            cmds.AddCommandToHistory(command, activatingCircle.Type, command.Execute(), false);
+            bool success = command.Execute();
+
+            GameLog.Action(success
+                ? $"SUCCESS reproduction at ({x},{y})"
+                : $"FAILED reproduction at ({x},{y})"
+            );
+
+            GameServices.CommandSys.AddCommandToHistory(command, activatingCircle.Type, success, false);
+
+            GameServices.Ability.NotifyGameCommandExecuted(command);
 
             mainGameState.ReturnToNormalAndSwitchPlayer();
         }
         else if(clickedPos.x == activatingCircle.GridX && clickedPos.y == activatingCircle.GridY)
         {
-            ui.ShowHint($"Ход игрока {turn.CurrentPlayer}");
+            GameLog.Action($"Player cancelled ability {GetType().Name}");
+            
+            GameServices.Ui.ShowHint($"Ход игрока {GameServices.Turn.CurrentPlayer}");
             mainGameState.ReturnToNormal();
         }
         else
         {
-            ui.ShowHint("Нельзя размножиться сюда");
+            GameLog.Error($"Invalid target ({x},{y}) for {GetType().Name}");
+
+            GameServices.Ui.ShowHint("Нельзя размножиться сюда");
         }
     }
 }

@@ -12,27 +12,29 @@ public class PlaceCircleEtherState : MainGameSubState
     
     public override void Enter()
     {
-        Debug.Log($"PlaceCircleEtherState: вошли в состояние Enter()");
+        GameLog.Action($"ENTER {GetType().Name}");
     }
 
      public override void Exit()
     {
-        Debug.Log($"PlaceCircleEtherState: вышли из состояния Exit()");
+        GameLog.Action($"EXIT {GetType().Name}");
     }
     
     public override void HandleCellClick(int x, int y)
     {
-        if(grid.IsCellOccupied(x,y) && grid.GetCircleAt(x,y).Type == CircleType.Core)
+        GameLog.Action($"Player {GameServices.Turn.CurrentPlayer} click ({x},{y}) in {GetType().Name}");
+        
+        if(GameServices.Grid.IsCellOccupied(x,y) && GameServices.Grid.GetCircleAt(x,y).Type == CircleType.Core)
         {
             return;
         }
         
         // Создаём команду для установки круга
-        Command command = new PlaceCircleCommand(x, y, typeToPlace, turn.CurrentPlayer, grid);   
-        cmds.AddCommandToHistory(command, typeToPlace, false, true);
+        Command command = new PlaceCircleCommand(x, y, typeToPlace, GameServices.Turn.CurrentPlayer, true); 
+        GameLog.Ether($"Create ether PlaceCommand ({x},{y})");  
+        GameServices.CommandSys.AddCommandToHistory(command, typeToPlace, false, true);
         
-        GameServices.Ability.NotifyCommandCreated(command);
-        
+        GameServices.Ability.NotifyEtherCommandCreated(command);
     }
     
 }

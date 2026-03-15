@@ -15,41 +15,55 @@ public class BarrierSelectionState : MainGameSubState
     
     public override void Enter()
     {
-        Debug.Log("BarrierSelectionState: вошли в режим выбора клетки для барьера");
+        GameLog.Action($"ENTER {GetType().Name}");
         
         // Подсвечиваем доступные клетки
-        grid.HighlightCells(possiblePositions, Color.cyan);
+        GameServices.Grid.HighlightCells(possiblePositions, Color.cyan);
         
-        ui.ShowHint("Выберите клетку для барьера");
+        GameServices.Ui.ShowHint("Выберите клетку для барьера");
     }
     
     public override void Exit()
     {
-        Debug.Log("BarrierSelectionState: выходим из режима выбора барьера");
-        grid.ClearHighlights();
+        GameLog.Action($"EXIT {GetType().Name}");
+        GameServices.Grid.ClearHighlights();
     }
     
     public override void HandleCellClick(int x, int y)
     {
+        GameLog.Action($"Player {GameServices.Turn.CurrentPlayer} click ({x},{y}) in {GetType().Name}");
+        
         Vector2Int clickedPos = new Vector2Int(x, y);
         
         if (possiblePositions.Contains(clickedPos))
         {
-            Command command = new PlaceBarrierCommand(x, y, turn.CurrentPlayer, grid);
+            Command command = new PlaceBarrierCommand(x, y, GameServices.Turn.CurrentPlayer, GameServices.Grid, false);
 
-            cmds.AddCommandToHistory(command, activatingCircle.Type, command.Execute(), false);
-            Debug.Log("Команда записана в history");
+            bool success = command.Execute();
+
+            GameLog.Action(success
+                ? $"SUCCESS barrier at ({x},{y})"
+                : $"FAILED barrier at ({x},{y})"
+            );
+
+            GameServices.CommandSys.AddCommandToHistory(command, activatingCircle.Type, success, false);
+            
+            GameServices.Ability.NotifyGameCommandExecuted(command);
 
             mainGameState.ReturnToNormalAndSwitchPlayer();
         }
         else if(clickedPos.x == activatingCircle.GridX && clickedPos.y == activatingCircle.GridY)
         {
-            ui.ShowHint($"Ход игрока {turn.CurrentPlayer}");
+            GameLog.Action($"Player cancelled ability {GetType().Name}");
+
+            GameServices.Ui.ShowHint($"Ход игрока {GameServices.Turn.CurrentPlayer}");
             mainGameState.ReturnToNormal();
         }
         else
         {
-            ui.ShowHint("Нельзя поставить барьер сюда");
+            GameLog.Error($"Invalid target ({x},{y}) for {GetType().Name}");
+
+            GameServices.Ui.ShowHint("Нельзя поставить барьер сюда");
         }
     }
 }

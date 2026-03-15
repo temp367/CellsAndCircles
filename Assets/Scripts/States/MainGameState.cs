@@ -12,7 +12,7 @@ public class MainGameState : GameState
     
     public override void Enter()
     {
-        Debug.Log("MainGameState: вошли в основную игру");
+        GameLog.Action($"ENTER {GetType().Name}");
         
         // Сбрасываем подсветку
         grid.ClearHighlights();
@@ -29,6 +29,7 @@ public class MainGameState : GameState
     
     public override void Exit()
     {
+        GameLog.Action($"EXIT {GetType().Name}");
         // Если есть активное подсостояние, выходим из него
         if (currentSubState != null)
         {
@@ -72,21 +73,23 @@ public class MainGameState : GameState
     
     private void HandleEmptyCellClick(int x, int y)
     {
+        GameLog.Action($"Player {GameServices.Turn.CurrentPlayer} click ({x},{y}) in {GetType().Name}");
+        
         CircleType selectedType = gameManager.selectedCircleType;
         
         if(selectedType != CircleType.Core)
         {
             // Создаём команду для установки круга
-            Command command = new PlaceCircleCommand(x, y, selectedType, turn.CurrentPlayer, grid);   
+            Command command = new PlaceCircleCommand(x, y, selectedType, turn.CurrentPlayer, false);   
 
             bool success = command.Execute();
         
             if (success) 
-            {
-                GameLogger.Log($"Игрок {turn.CurrentPlayer} установил {selectedType} на ({x}, {y})");
-                Debug.Log($"MainGameState: игрок {turn.CurrentPlayer} ставит {selectedType} круг на ({x}, {y})");
-                
+            {   
                 cmds.AddCommandToHistory(command, selectedType, success, false);
+         
+                GameServices.Ability.NotifyGameCommandExecuted(command);
+
                 ReturnToNormalAndSwitchPlayer();
             }
             else
@@ -103,6 +106,8 @@ public class MainGameState : GameState
     
     private void HandleOwnCircleClick(Circle circle, int x, int y)
     {
+        GameLog.Action($"Player {GameServices.Turn.CurrentPlayer} click ({x},{y}) in {GetType().Name}");
+        
         if (circle.CanActivate)
         {
             bool hasTargets = circle.Activate();
@@ -128,6 +133,19 @@ public class MainGameState : GameState
 
         // Создаём и входим в новое подсостояние
         currentSubState = new PlaceCircleEtherState(this, type);
+        currentSubState.Enter();
+    }
+
+    public override void StartTriggerEther(TriggerKind kindTrig, CircleType? typeCirc, GameManager gm)
+    {
+        Debug.Log($"MainGameState: запуск TriggerCellSelectionState для типа {typeCirc}");
+
+        // Выходим из текущего подсостояния, если есть
+        if (currentSubState != null)
+            currentSubState.Exit();
+
+        // Создаём и входим в новое подсостояние
+        currentSubState = new TriggerCellSelectionState(this, kindTrig, typeCirc, gm);        
         currentSubState.Enter();
     }
 
@@ -223,5 +241,8 @@ public class MainGameState : GameState
             currentSubState.Exit();
             currentSubState = null;
         }
+
+        GameServices.Ui.ShowHint($"Ход игрока {GameServices.Turn.CurrentPlayer}");
+        GameServices.Ui.SwitchEtherPanel(GameServices.Ui.etherCellsPanel);
     }
 }

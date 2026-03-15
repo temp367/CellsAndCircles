@@ -5,6 +5,8 @@ using UnityEngine;
 public class AbilitySystem : MonoBehaviour, IInitializable
 {
     public event Action<Command> OnEtherCommandCreated;
+    public event Action<Command> OnGameCommandExecuted;
+
 
     public InitStage InitStage => InitStage.Abil;
 
@@ -22,8 +24,18 @@ public class AbilitySystem : MonoBehaviour, IInitializable
         stateMachine = machine;
     }
 
-    public void NotifyCommandCreated(Command command) => OnEtherCommandCreated?.Invoke(command);
+    public void NotifyEtherCommandCreated(Command command) 
+    {
+        GameLog.Ether($"Ether command created {command.GetType().Name}");
+        OnEtherCommandCreated?.Invoke(command);
+    }
+
+    public void NotifyGameCommandExecuted(Command command)
+    {
+        OnGameCommandExecuted?.Invoke(command);   
+    }
     
+
     // Прокси-методы для вызова из кругов
     public void StartTargetSelection(Circle activator, List<Circle> targets)
     {
