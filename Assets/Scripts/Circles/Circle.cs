@@ -5,7 +5,8 @@ public enum CircleType
     Core,
     Red,
     Blue,
-    Green
+    Green,
+    Purple
 }
 
 public abstract class Circle : MonoBehaviour
@@ -25,7 +26,7 @@ public abstract class Circle : MonoBehaviour
     public virtual bool CanBePushed => true;        // Можно толкать этот круг?
     public virtual bool CanActivate => true;        // У этого круга активируются способности? 
 
-    // Метод для инициализации (будет вызываться после создания)
+
     public void Initialize(int x, int y, int player, GridManager gr, GameManager gam, AbilitySystem abs)
     {
         GridX = x;
@@ -33,7 +34,6 @@ public abstract class Circle : MonoBehaviour
         Player = player;
         gridManager = gr;
         abilitySystem = abs;
-        //gameManager = gam;
     }
 
     public void UpdatePosition(int newX, int newY)

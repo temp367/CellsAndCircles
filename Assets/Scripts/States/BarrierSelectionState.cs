@@ -18,7 +18,7 @@ public class BarrierSelectionState : MainGameSubState
         GameLog.Action($"ENTER {GetType().Name}");
         
         // Подсвечиваем доступные клетки
-        GameServices.Grid.HighlightCells(possiblePositions, Color.cyan);
+        GameServices.Highlight.ShowCells(possiblePositions, Color.cyan);
         
         GameServices.Ui.ShowHint("Выберите клетку для барьера");
     }
@@ -26,7 +26,7 @@ public class BarrierSelectionState : MainGameSubState
     public override void Exit()
     {
         GameLog.Action($"EXIT {GetType().Name}");
-        GameServices.Grid.ClearHighlights();
+        GameServices.Highlight.Clear();
     }
     
     public override void HandleCellClick(int x, int y)
@@ -37,7 +37,7 @@ public class BarrierSelectionState : MainGameSubState
         
         if (possiblePositions.Contains(clickedPos))
         {
-            Command command = new PlaceBarrierCommand(x, y, GameServices.Turn.CurrentPlayer, GameServices.Grid, false);
+            Command command = new PlaceBarrierCommand(x, y, GameServices.Turn.CurrentPlayer, false);
 
             bool success = command.Execute();
 

@@ -4,12 +4,16 @@ using UnityEngine;
 
 public class EtherSystem : MonoBehaviour, IInitializable
 {
-     public InitStage InitStage => InitStage.Ethir;
+    public InitStage InitStage => InitStage.Ethir;
 
-     private List<Trigger> triggers = new List<Trigger>();   // активные триггеры
+    private List<Trigger> triggers = new List<Trigger>();   // активные триггеры
     
     // Связь триггеров и команд
     private Dictionary<Trigger, Command> pendingCommands = new Dictionary<Trigger, Command>();
+
+    public List<Trigger> GetTriggers() => triggers ?? new List<Trigger>();
+
+    public Dictionary<Trigger, Command> GetPendingCommands() => pendingCommands ?? new Dictionary<Trigger, Command>();
     
     public void Initialize()
     {
@@ -56,6 +60,7 @@ public class EtherSystem : MonoBehaviour, IInitializable
         pendingCommands.Add(trigger, command);
 
         GameLog.Trigger($"Trigger created Enemy_Activate_ | Player:{player} | Type:{type} | Cell:{cell}");
+        
     }
 
     // вызывается когда выполнена обычная команда
@@ -86,5 +91,11 @@ public class EtherSystem : MonoBehaviour, IInitializable
 
             pendingCommands.Remove(trigger);
         }
+    }
+
+
+    public void ClearAllCommands()
+    {
+        pendingCommands.Clear();
     }
 }

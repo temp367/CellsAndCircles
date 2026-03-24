@@ -4,15 +4,13 @@ public class TriggerCellSelectionState : MainGameSubState
 {
     private CircleType? triggerType;
     private TriggerKind triggerKind;
-    private GameManager gm;
 
     private bool triggerCreated;
 
-    public TriggerCellSelectionState(MainGameState state, TriggerKind kind, CircleType? type, GameManager gm) : base(state)
+    public TriggerCellSelectionState(MainGameState state, TriggerKind kind, CircleType? type) : base(state)
     {
         triggerKind = kind;
         triggerType = type;
-        this.gm = gm;
     }
 
     public override void Enter()
@@ -35,6 +33,12 @@ public class TriggerCellSelectionState : MainGameSubState
     public override void HandleCellClick(int x, int y)
     {
         GameLog.Action($"Player {GameServices.Turn.CurrentPlayer} click ({x},{y}) in {GetType().Name}");
+
+        if(GameServices.Grid.GetCircleAt(x, y) != null && GameServices.Grid.GetCircleAt(x, y).Type == CircleType.Core)
+        {
+            GameServices.Ui.ShowHint("Клетка Core не доступна");
+            return;
+        }
         CreateTrigger(new Vector2Int(x, y));
     }
 
@@ -48,7 +52,7 @@ public class TriggerCellSelectionState : MainGameSubState
         if (triggerCreated)
             return;
 
-        Command command = gm.lastPendingCommand;
+        Command command = GameServices.Game.lastPendingCommand;
 
         // проверяем клетку исходной команды
         if (command is PlaceCircleCommand placeCommand && cell != null)
@@ -66,6 +70,8 @@ public class TriggerCellSelectionState : MainGameSubState
 
         int player = GameServices.Turn.CurrentPlayer;
 
+        if(cell.HasValue) GameServices.Highlight.HighlightCell(cell.Value.x, cell.Value.y, Color.aquamarine);
+        
         switch (triggerKind)
         {
             case TriggerKind.EnemyPlaceCircle:
@@ -86,7 +92,7 @@ public class TriggerCellSelectionState : MainGameSubState
                 );
                 break;
 
-            case TriggerKind.enemyActivate:
+            case TriggerKind.enemyActivate: 
             GameServices.Ether.AddEnemyActivateTrigger(
                 command,
                 triggerType,
@@ -96,10 +102,10 @@ public class TriggerCellSelectionState : MainGameSubState
             break;
         }
 
-        gm.lastPendingCommand = null;
+        GameServices.Game.lastPendingCommand = null;
 
         Debug.Log("Триггер создан");
 
-        mainGameState.ReturnToNormal();
+        mainGameState.ReturnToNormalAndSwitchPlayer();
     }
 }

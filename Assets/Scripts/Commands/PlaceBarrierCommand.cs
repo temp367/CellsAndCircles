@@ -6,20 +6,18 @@ public class PlaceBarrierCommand : Command
     public int Y { get; private set; }
     public CircleType Type { get; private set; }
     
-    private GridManager grid;
 
-    public PlaceBarrierCommand(int x, int y, int ownerPlayer, GridManager grid,bool isEtherCommand) : base(ownerPlayer, isEtherCommand)
+    public PlaceBarrierCommand(int x, int y, int ownerPlayer, bool isEtherCommand) : base(ownerPlayer, isEtherCommand)
     {
         this.X = x;
         this.Y = y;
-        this.grid = grid;
     }
     
     public override bool Execute()
     {
         if (!executed)
         {
-            executed = grid.PlaceBarrier(X, Y, OwnerPlayer, grid.CurrentTurn);
+            executed = GameServices.Grid.PlaceBarrier(X, Y, OwnerPlayer, GameServices.Grid.CurrentTurn);
         }
 
         return executed;

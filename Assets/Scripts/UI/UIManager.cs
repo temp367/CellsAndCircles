@@ -4,12 +4,18 @@ using TMPro;
 
 public class UIManager : MonoBehaviour, IInitializable
 {
+    public Image panelPlayer; // Фон панели
+    public Color player1Color;
+    public Color player2Color;
+
     [Header("Кнопки выбора типа круга для хода")]
     public Button redButton;
     public Button blueButton;
     public Button greenButton;
+    public Button purpleButton;
 
     [Header("Управление сессиями")]
+    public GameObject restartPanel;
     public Button restartButton;
 
     [Header("Ячейки эфира")]
@@ -28,6 +34,7 @@ public class UIManager : MonoBehaviour, IInitializable
     public Button placeRedButton;
     public Button placeBlueButton;
     public Button placeGreenButton;
+    public Button placePurpleButton;
 
     [Header("Панель выбора триггера")]
     public GameObject etherTriggerPanel;      
@@ -41,6 +48,7 @@ public class UIManager : MonoBehaviour, IInitializable
     public Button triggerRedButton;
     public Button triggerBlueButton;
     public Button triggerGreenButton;
+    public Button triggerPurpleButton;
     public Button triggerAnyButton;
 
     [Header("Панель выбора координаты круга для триггера")]
@@ -81,18 +89,39 @@ public class UIManager : MonoBehaviour, IInitializable
         Debug.Log("UIManager initialized");
     }
 
+    // Вызывать каждый раз при смене игрока
+    public void UpdatePlayerPanel(int currentPlayer)
+    {
+        if (panelPlayer == null) return;
+
+        switch (currentPlayer)
+        {
+            case 1:
+                panelPlayer.color = player1Color;
+                break;
+            case 2:
+                panelPlayer.color = player2Color;
+                break;
+            default:
+                panelPlayer.color = Color.white;
+                break;
+        }
+    }
+
     private void InitUIEvents()
     {
         // Подписываемся на события кнопок
         redButton.onClick.AddListener(() => OnCircleTypeSelected?.Invoke(CircleType.Red));
         blueButton.onClick.AddListener(() => OnCircleTypeSelected?.Invoke(CircleType.Blue));
         greenButton.onClick.AddListener(() => OnCircleTypeSelected?.Invoke(CircleType.Green));
+        purpleButton.onClick.AddListener(() => OnCircleTypeSelected?.Invoke(CircleType.Purple));
         restartButton.onClick.AddListener(() => OnRestartClicked?.Invoke());
 
         // Кнопки выбора типа для установки (панель Place)
         placeRedButton.onClick.AddListener(() => OnPlaceTypeSelected(CircleType.Red));
         placeBlueButton.onClick.AddListener(() => OnPlaceTypeSelected(CircleType.Blue));
         placeGreenButton.onClick.AddListener(() => OnPlaceTypeSelected(CircleType.Green));
+        placePurpleButton.onClick.AddListener(() => OnPlaceTypeSelected(CircleType.Purple));
 
         
         //Кнопки для выбора типа круга триггера
@@ -111,6 +140,12 @@ public class UIManager : MonoBehaviour, IInitializable
         triggerGreenButton.onClick.AddListener(() =>
         {
             OnTriggerTypeSelected(CircleType.Green);
+            SwitchEtherPanel(etherTriggerCoordinataPanel);
+        });
+
+        triggerPurpleButton.onClick.AddListener(() =>
+        {
+            OnTriggerTypeSelected(CircleType.Purple);
             SwitchEtherPanel(etherTriggerCoordinataPanel);
         });
 
@@ -159,7 +194,7 @@ public class UIManager : MonoBehaviour, IInitializable
         });
 
         etherActivateButton.onClick.AddListener(() => {
-            OnActivateTypeSelected();
+            OnActivateTypeConfirmed?.Invoke();
         });
     
         // Кнопки навигации внутри панелей
@@ -211,13 +246,6 @@ public class UIManager : MonoBehaviour, IInitializable
         ShowHint("Можешь Выбрать клетку или оставить любую");
     }
 
-    private void OnActivateTypeSelected()
-    {
-        OnActivateTypeConfirmed?.Invoke();
-        
-        ShowHint("Выбери клетку активации круга");
-    }
-
     // Подсветка выбранной кнопки в панели Place
     private void UpdatePlaceTypeButtons(CircleType selected)
     {
@@ -227,6 +255,8 @@ public class UIManager : MonoBehaviour, IInitializable
             placeBlueButton.interactable = (selected != CircleType.Blue);
         if (placeGreenButton != null)
             placeGreenButton.interactable = (selected != CircleType.Green);
+        if (placePurpleButton != null)
+            placePurpleButton.interactable = (selected != CircleType.Purple);
     }
 
     // Обновление текста игрока
@@ -244,6 +274,7 @@ public class UIManager : MonoBehaviour, IInitializable
         redButton.interactable = (selectedType != CircleType.Red);
         blueButton.interactable = (selectedType != CircleType.Blue);
         greenButton.interactable = (selectedType != CircleType.Green);
+        purpleButton.interactable = (selectedType != CircleType.Purple);
     }
 
     // Показать подсказку
@@ -264,5 +295,12 @@ public class UIManager : MonoBehaviour, IInitializable
         redButton.interactable = true;
         blueButton.interactable = true;
         greenButton.interactable = true;
+        purpleButton.interactable = true;
+    }
+
+    public void ShowRestartButton()
+    {
+        restartPanel.gameObject.SetActive(true);
+    
     }
 }

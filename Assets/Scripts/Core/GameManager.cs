@@ -11,7 +11,8 @@ public enum InitStage
     Command = 21,   // команды действий
     Abil = 22,      // управление способностями юнитов
     Ethir = 23,     // управление эфиром
-    UI = 30          // интерфейс
+    UI = 30,         // интерфейс
+    Visual = 31,
 }
 
 public class GameManager : MonoBehaviour
@@ -25,6 +26,7 @@ public class GameManager : MonoBehaviour
     public AbilitySystem abilitySystem;
     public UIManager uiManager;
     public EtherSystem etherSystem;
+    public HighlightSystem highlightSystem;
 
     private List<IInitializable> systems = new List<IInitializable>(); // Список всех инициализируемых систем
 
@@ -35,6 +37,8 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
+        GameServices.Game = this;
+
         GameLog.Initialize();
         
         // Собираем все системы
@@ -53,6 +57,7 @@ public class GameManager : MonoBehaviour
         TryRegister(abilitySystem);
         TryRegister(etherSystem);
         TryRegister(uiManager);
+        TryRegister(highlightSystem);
     }
     
     void TryRegister(IInitializable system)
@@ -142,9 +147,32 @@ public class GameManager : MonoBehaviour
         StateMachine.ChangeState(new MainGameState(this));
     }
 
-    private void OnDestroy()
+    public void EndGame(int winnerPlayer)
     {
-       
+        Debug.Log($"Игрок {winnerPlayer} победил!");
+
+        GameServices.Ui.ShowHint($"Игрок {winnerPlayer} победил!");
+
+        // Останавливаем ввод игрока
+        
+
+        // Останавливаем FSM игры
+        GameServices.Game.StateMachine.Stop();
+
+        // Удаляем все эфирные триггеры
+      
+
+        // Очищаем очередь эфирных команд
+        GameServices.Ether.ClearAllCommands();
+
+        // Отписываемся от событий
+        
+
+        // Очищаем историю команд
+        
+
+        // Оставляем только кнопку рестарта
+        GameServices.Ui.ShowRestartButton();
     }
 
     public void RestartGame()

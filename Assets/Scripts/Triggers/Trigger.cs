@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 public enum TriggerKind
 {
@@ -13,11 +14,14 @@ public abstract class Trigger
 
     public bool IsActive { get; protected set; } = true;
 
+    public Vector2Int? TargetCell { get; private set; }
+
     public event Action<Trigger> OnTriggered;
 
-    protected Trigger(int ownerPlayer)
+    protected Trigger(int ownerPlayer, Vector2Int? cell)
     {
         OwnerPlayer = ownerPlayer;
+        TargetCell= cell;
     }
 
     // Проверка команды

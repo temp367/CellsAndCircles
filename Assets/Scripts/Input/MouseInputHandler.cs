@@ -5,18 +5,28 @@ public class MouseInputHandler : MonoBehaviour
 {
     // Ссылка на камеру (можно найти автоматически)
     private Camera mainCamera;
+    private bool inputEnabled;
 
     void Start()
     {
         mainCamera = Camera.main;
+        inputEnabled = true;
         if (mainCamera == null)
         {
             Debug.LogError("Main Camera not found!");
         }
     }
 
+    public void DisableInput()
+    {
+        inputEnabled = false;
+    }
+
     void Update()
     {
+        if(!inputEnabled) return;
+
+
         // Была ли нажата левая кнопка мыши в этом кадре?
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {

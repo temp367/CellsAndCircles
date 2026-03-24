@@ -15,14 +15,13 @@ public class GreenReproductionEtherState : MainGameSubState
     public override void Enter()
     {
         GameLog.Action($"ENTER {GetType().Name}");
-        GameServices.Grid.HighlightCells(possibleCells, Color.yellow); // жёлтый для эфира
+        GameServices.Highlight.ShowCells(possibleCells, Color.yellow); // жёлтый для эфира
         GameServices.Ui.ShowHint("Выберите клетку для записи деления в эфир");
     }
     
     public override void Exit()
     {
         GameLog.Action($"EXIT {GetType().Name}");
-        GameServices.Grid.ClearHighlights();
     }
     
     public override void HandleCellClick(int x, int y)

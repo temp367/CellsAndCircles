@@ -6,16 +6,14 @@ public class ReproduceCommand : Command
     public int Y { get; private set; }
     public CircleType Type { get; private set; }
 
-    private int x;
-    private int y;
     private CircleType type;
     private GridManager grid;
     public Circle Activator{ get; private set; }
     
     public ReproduceCommand(int x, int y, CircleType type, int ownerPlayer, GridManager grid, Circle parent, bool isEtherCommand) : base(ownerPlayer, isEtherCommand)
     {
-        this.x = x;
-        this.y = y;
+        X = x;
+        Y = y;
         this.type = type;
         this.grid = grid;
         this.Activator = parent;
@@ -25,7 +23,7 @@ public class ReproduceCommand : Command
     {
         if (!executed)
         {
-            executed = grid.PlaceCircle(x, y, OwnerPlayer, type);
+            executed = grid.PlaceCircle(X, Y, OwnerPlayer, type);
         }
         
         return executed;
@@ -38,6 +36,6 @@ public class ReproduceCommand : Command
     
     public override string GetDescription()
     {
-        return $"Размножить {type} на ({x},{y})";
+        return $"Размножить {type} на ({X},{Y})";
     }
 }

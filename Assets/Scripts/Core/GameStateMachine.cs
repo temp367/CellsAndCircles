@@ -76,11 +76,21 @@ public class GameStateMachine
         }
     }
     
-    public void Update()
+    // public void Update()
+    // {
+    //     if (currentState != null)
+    //     {
+    //         currentState.Update();
+    //     }
+    // }
+
+    public void Stop()
     {
-        if (currentState != null)
-        {
-            currentState.Update();
-        }
+        if(currentState != null)
+            currentState.Exit();
+    
+        currentState = null;
+    
+        Debug.Log("GameStateMachine остановлена");
     }
 }

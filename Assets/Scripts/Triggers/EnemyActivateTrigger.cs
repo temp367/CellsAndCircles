@@ -3,13 +3,12 @@ using UnityEngine;
 public class EnemyActivateTrigger : Trigger
 {
     public CircleType? TargetType { get; private set; }
-    public Vector2Int? TargetCell { get; private set; }
+
 
     public EnemyActivateTrigger(int ownerPlayer, CircleType? type, Vector2Int? cell)
-        : base(ownerPlayer)
+        : base(ownerPlayer, cell)
     {
         TargetType = type;
-        TargetCell = cell;
     }
 
     protected override bool Check(Command command)
@@ -36,6 +35,12 @@ public class EnemyActivateTrigger : Trigger
             commandType = CircleType.Green;
             position = new Vector2Int(reproduce.Activator.GridX, reproduce.Activator.GridY);
         }
+        else if (command is RemoveChainCommand remove)
+        {
+            player = remove.OwnerPlayer;
+            commandType = CircleType.Purple;
+            position = new Vector2Int(remove.Activator.GridX, remove.Activator.GridY);
+        }
         else
         {
             return false;
@@ -47,10 +52,6 @@ public class EnemyActivateTrigger : Trigger
 
         // тип противника не совпал с типом который задал игрок
         if (TargetType != null && commandType != TargetType)
-            return false;
-
-        // фильтр клетки
-        if (TargetCell != null && TargetCell.Value != position)
             return false;
 
         return true;

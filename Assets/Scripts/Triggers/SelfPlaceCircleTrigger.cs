@@ -2,14 +2,12 @@ using UnityEngine;
 
 public class SelfPlaceCircleTrigger : Trigger
 {
-    public CircleType? TargetType { get; private set; }
-    public Vector2Int? TargetCell { get; private set; }
+    public CircleType? TargetType { get; private set; }    
 
     public SelfPlaceCircleTrigger(int ownerPlayer, CircleType? type, Vector2Int? cell)
-        : base(ownerPlayer)
+        : base(ownerPlayer, cell)
     {
         TargetType = type;
-        TargetCell = cell;
     }
 
     protected override bool Check(Command command)

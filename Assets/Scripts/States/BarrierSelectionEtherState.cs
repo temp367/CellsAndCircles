@@ -15,14 +15,13 @@ public class BarrierSelectionEtherState : MainGameSubState
     public override void Enter()
     {
         GameLog.Action($"ENTER {GetType().Name}");
-        GameServices.Grid.HighlightCells(possibleCells, Color.yellow); 
+        GameServices.Highlight.ShowCells(possibleCells, Color.yellow); 
         GameServices.Ui.ShowHint("Выберите клетку для записи барьера в эфир");
     }
     
     public override void Exit()
     {
         GameLog.Action($"EXIT {GetType().Name}");
-        GameServices.Grid.ClearHighlights();
     }
     
     public override void HandleCellClick(int x, int y)
@@ -33,7 +32,7 @@ public class BarrierSelectionEtherState : MainGameSubState
         
         if (possibleCells.Contains(clickedPos))
         {
-            Command command = new PlaceBarrierCommand(x, y,GameServices.Turn.CurrentPlayer, GameServices.Grid, true);
+            Command command = new PlaceBarrierCommand(x, y,GameServices.Turn.CurrentPlayer, true);
             GameLog.Ether($"Create ether BarrierCommand from ({activatingCircle.GridX},{activatingCircle.GridY}) -> ({x},{y})");
             GameServices.CommandSys.AddCommandToHistory(command, activatingCircle.Type, false, true);
 

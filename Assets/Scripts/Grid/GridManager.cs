@@ -24,7 +24,7 @@ public class GridManager : MonoBehaviour, IInitializable
     private Dictionary<Vector2Int, Circle> placedCircles; // координаты и круг
     private Dictionary<CircleType, GameObject> prefabsByType; // Тип и Префаб круга
     private Dictionary<Vector2Int, Barrier> barriers; // координата и барьер
-    private Dictionary<Vector2Int, Color> originalCellColors; // оригинальый цвет клеток
+    //private Dictionary<Vector2Int, Color> originalCellColors; // оригинальый цвет клеток
 
     [Serializable]
     public class CirclePrefabMapping
@@ -50,7 +50,7 @@ public class GridManager : MonoBehaviour, IInitializable
         // Инициализация словарей
         placedCircles = new Dictionary<Vector2Int, Circle>();
         barriers = new Dictionary<Vector2Int, Barrier>();
-        originalCellColors = new Dictionary<Vector2Int, Color>();
+        //originalCellColors = new Dictionary<Vector2Int, Color>();
         prefabsByType = new Dictionary<CircleType, GameObject>();
 
         // Заполняем маппинг префабов
@@ -451,15 +451,17 @@ public class GridManager : MonoBehaviour, IInitializable
         currentTurn++;
     }
 
-    public void RemoveBarriersForPlayer(int player, int currentTurn)
+    public void RemoveBarriersForPlayer(int currentTurn)
     {
+        Barrier barrier = null;
+
         List<Vector2Int> toRemove = new List<Vector2Int>();
 
         foreach (var kvp in barriers)  //KeyValuePair 
         {
-            Barrier barrier = kvp.Value;
+            barrier = kvp.Value;
             // Если барьер принадлежит игроку И был поставлен не в этот ход (т.е. в предыдущий)
-            if (barrier.OwnerPlayer == player && barrier.TurnPlaced < currentTurn)
+            if (barrier.ExpireTurn < currentTurn)
             {
                 toRemove.Add(kvp.Key);
             }
@@ -469,7 +471,7 @@ public class GridManager : MonoBehaviour, IInitializable
         {
             Destroy(barriers[pos].gameObject);
             barriers.Remove(pos);
-            Debug.Log($"Барьер игрока {player} удалён на клетке ({pos.x}, {pos.y})");
+            Debug.Log($"Барьер игрока {barrier.OwnerPlayer} удалён на клетке ({pos.x}, {pos.y})");
         }
     }
 
@@ -483,51 +485,6 @@ public class GridManager : MonoBehaviour, IInitializable
         }
     }
 
-    public void HighlightCells(List<Vector2Int> cells, Color highlightColor)
-    {
-        // Сначала сбрасываем предыдущую подсветку
-        ClearHighlights();
-
-        foreach (Vector2Int pos in cells)
-        {
-            GameObject cell = GetCellObject(pos.x, pos.y);
-
-            if (cell != null)
-            {
-                SpriteRenderer sr = cell.GetComponent<SpriteRenderer>();
-
-                if (sr != null)
-                {
-                    // Сохраняем оригинальный цвет, если ещё не сохраняли
-                    if (!originalCellColors.ContainsKey(pos))
-                    {
-                        originalCellColors[pos] = sr.color;
-                    }
-                    // Устанавливаем цвет подсветки
-                    sr.color = highlightColor;
-                }
-            }
-        }
-    }
-
-    public void ClearHighlights()
-    {
-        foreach (var kvp in originalCellColors)
-        {
-            GameObject cell = GetCellObject(kvp.Key.x, kvp.Key.y);
-
-            if (cell != null)
-            {
-                SpriteRenderer sr = cell.GetComponent<SpriteRenderer>();
-                if (sr != null)
-                {
-                    sr.color = kvp.Value; // возвращаем оригинальный цвет
-                }
-            }
-        }
-        originalCellColors.Clear();
-    }
-
     private int currentPlayer = 1;
     public void HandlePlayerChanged(int newPlayer)
     {
@@ -539,7 +496,7 @@ public class GridManager : MonoBehaviour, IInitializable
         IncrementTurn();
             
         // Удаляем барьеры текущего игрока (того, чей ход начинается)
-        RemoveBarriersForPlayer(currentPlayer, CurrentTurn);
+        RemoveBarriersForPlayer(CurrentTurn);
     }
 
     public void SetGlowForPlayer(int player, bool enabled)
@@ -553,13 +510,4 @@ public class GridManager : MonoBehaviour, IInitializable
             }
         }
     }
-
-    // Если нужно сбросить подсветку у всех
-    /*public void ResetAllGlow()
-    {
-        foreach (var kvp in placedCircles)
-        {
-            kvp.Value.SetGlow(false);
-        }
-    }*/
 }

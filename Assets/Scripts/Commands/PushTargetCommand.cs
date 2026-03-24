@@ -3,8 +3,8 @@ using UnityEngine;
 public class PushTargetCommand : Command
 {
     public Circle Activator{ get; private set; }
-    private int oldX;
-    private int oldY;
+    public int OldX { get; private set; }
+    public int OldY { get; private set; }
     public int NewX { get; private set; }
     public int NewY { get; private set; }
     
@@ -12,8 +12,8 @@ public class PushTargetCommand : Command
     {
         this.Activator = pusher;
         
-        oldX = xOld;
-        oldY = yOld;
+        OldX = xOld;
+        OldY = yOld;
         
         // Вычисляем новую позицию
         int dx = xOld - pusher.GridX;
@@ -26,9 +26,26 @@ public class PushTargetCommand : Command
     {
         if (!executed)
         {
-            Circle circlePushed = GameServices.Grid.GetCircleAt(oldX, oldY);
+            Circle circlePushed = GameServices.Grid.GetCircleAt(OldX, OldY);
 
-            executed = GameServices.Grid.MoveCircle(oldX, oldY, NewX, NewY, circlePushed);      
+            // если клетка назначения вне поля
+            if (GameServices.Grid.GetCellObject(NewX, NewY) == null)
+            {
+                // если это Core — конец игры
+                if (circlePushed.Type == CircleType.Core)
+                {
+                    // Убираем Core с поля
+                    //GameServices.Grid.RemoveCircle(circlePushed.GridX, circlePushed.GridY);
+                    GameObject.Destroy(circlePushed.gameObject);
+    
+                    GameServices.Game.EndGame(Activator.Player);
+    
+                    executed = true;
+                    return executed;
+                }
+            }
+
+            executed = GameServices.Grid.MoveCircle(OldX, OldY, NewX, NewY, circlePushed);      
         }
 
         return executed;
@@ -50,6 +67,6 @@ public class PushTargetCommand : Command
     
     public override string GetDescription()
     {
-        return $"Толкнуть круг с ({oldX},{oldY}) на ({NewX},{NewY})";
+        return $"Толкнуть круг с ({OldX},{OldY}) на ({NewX},{NewY})";
     }
 }

@@ -15,7 +15,7 @@ public class MainGameState : GameState
         GameLog.Action($"ENTER {GetType().Name}");
         
         // Сбрасываем подсветку
-        grid.ClearHighlights();
+        GameServices.Highlight.Clear();
         
         // Сбрасываем подсостояние
         currentSubState = null;
@@ -39,7 +39,7 @@ public class MainGameState : GameState
         
         // Убираем подсветку
         //grid.SetGlowForPlayer(turn.CurrentPlayer, false);
-        grid.ClearHighlights();
+        GameServices.Highlight.Clear();
     }
     
     public override void HandleCellClick(int x, int y)
@@ -53,7 +53,7 @@ public class MainGameState : GameState
         
         // Обычный режим
         Circle circleOnCell = grid.GetCircleAt(x, y);
-        
+
         if (circleOnCell != null)
         {
             if (turn.IsOwnedByCurrentPlayer(circleOnCell))
@@ -145,7 +145,7 @@ public class MainGameState : GameState
             currentSubState.Exit();
 
         // Создаём и входим в новое подсостояние
-        currentSubState = new TriggerCellSelectionState(this, kindTrig, typeCirc, gm);        
+        currentSubState = new TriggerCellSelectionState(this, kindTrig, typeCirc);        
         currentSubState.Enter();
     }
 
@@ -213,6 +213,23 @@ public class MainGameState : GameState
         currentSubState = new GreenReproductionEtherState(this, activator, positions);
         currentSubState.Enter();
     }
+
+    public void StartRemoveChainSelection(Circle activator, List<Circle> targetCells)
+    {
+        if (currentSubState != null)
+            currentSubState.Exit();
+            
+        currentSubState = new RemoveChainSelectionState(this, activator, targetCells);
+        currentSubState.Enter();
+    }
+    public void StartRemoveChainEtherSelection(Circle activator, List<Vector2Int> targetCells)
+    {
+        if (currentSubState != null)
+            currentSubState.Exit();
+                                
+        currentSubState = new RemoveChainEtherSelectionState(this, activator, targetCells);
+        currentSubState.Enter();
+    }
     
     // Возврат в обычный режим с переключением хода
     public void ReturnToNormalAndSwitchPlayer()
@@ -229,7 +246,7 @@ public class MainGameState : GameState
         
         // Обновляем подсказку
         ui.ShowHint($"Ход игрока {turn.CurrentPlayer}");
-        
+        GameServices.Ui.SwitchEtherPanel(GameServices.Ui.etherCellsPanel);
         // Подсветка кругов обновится в SwitchPlayer через GridManager.SetGlowForPlayer
     }
 

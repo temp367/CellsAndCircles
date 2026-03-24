@@ -34,12 +34,24 @@ public class RedCircle : Circle
                 int finishX = nearX + dir.x;
                 int finishY = nearY + dir.y;
 
-                // Проверяем, свободна ли новая клетка
-                if ((gridManager.GetCellObject(finishX, finishY) == null) ||
-                     gridManager.IsCellOccupied(finishX, finishY) || 
-                     gridManager.HasBarrierAt(finishX, finishY)) continue; // занято, цель не двигается
-                
-                targets.Add(neighbor);
+                bool cellExists = gridManager.GetCellObject(finishX, finishY) != null;
+
+                // если клетка существует — обычная проверка
+                if (cellExists)
+                {
+                    if (gridManager.IsCellOccupied(finishX, finishY) ||
+                        gridManager.HasBarrierAt(finishX, finishY))
+                        continue;
+                }
+                else
+                {
+                    // клетки нет (за границей)
+                    // разрешаем только для Core
+                    if (neighbor.Type != CircleType.Core)
+                        continue;
+                }
+
+                targets.Add(neighbor); 
             }
         }
 
@@ -79,19 +91,24 @@ public class RedCircle : Circle
             {
                 int finishX = nearX + dir.x;
                 int finishY = nearY + dir.y;
-    
-                if (!gridManager.HasBarrierAt(finishX, finishY) && 
-                    gridManager.GetCellObject(finishX, finishY) != null)
+                
+                bool cellExists = gridManager.GetCellObject(finishX, finishY) != null;
+
+                // если клетка существует — обычная проверка
+                if (cellExists)
                 {
-                    if(gridManager.GetCircleAt(nearX, nearY) != null && gridManager.GetCircleAt(nearX, nearY).Type == CircleType.Core)
-                    {
+                    if (gridManager.HasBarrierAt(finishX, finishY))
                         continue;
-                    }
-                    else
-                    {
-                        targetCells.Add(new Vector2Int(nearX, nearY));   
-                    }
                 }
+                else
+                {
+                    // клетки нет (за границей)
+                    // разрешаем только для Core
+                    if (GameServices.Grid.GetCircleAt(nearX, nearY) != null && GameServices.Grid.GetCircleAt(nearX, nearY).Type != CircleType.Core)
+                        continue;
+                }
+
+                targetCells.Add(new Vector2Int(nearX, nearY));   
             }
         }
     

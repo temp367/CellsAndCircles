@@ -17,7 +17,7 @@ public class GreenReproductionState : MainGameSubState
     {
         GameLog.Action($"ENTER {GetType().Name}");
         // Подсвечиваем доступные клетки
-        GameServices.Grid.HighlightCells(possiblePositions, Color.green);
+        GameServices.Highlight.ShowCells(possiblePositions, Color.green);
         
         GameServices.Ui.ShowHint("Выберите клетку для размножения");
     }
@@ -25,7 +25,7 @@ public class GreenReproductionState : MainGameSubState
     public override void Exit()
     {
         GameLog.Action($"EXIT {GetType().Name}");
-        GameServices.Grid.ClearHighlights();
+        GameServices.Highlight.Clear();
     }
     
     public override void HandleCellClick(int x, int y)

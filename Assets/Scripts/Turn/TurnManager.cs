@@ -40,9 +40,8 @@ public class TurnManager : MonoBehaviour, IInitializable
         OnPlayerChanged?.Invoke(currentPlayer);
 
         // Обновляем UI
-        if (uiManager != null)
-            uiManager.UpdatePlayerTurnText(currentPlayer);
-
+        GameServices.Ui.UpdatePlayerTurnText(currentPlayer);
+        GameServices.Ui.UpdatePlayerPanel(currentPlayer);
 
         Debug.Log($"TurnManager: Ход игрока {currentPlayer}");
     }

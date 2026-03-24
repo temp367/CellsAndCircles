@@ -77,7 +77,7 @@ public class GreenCircle : Circle
 
             // Проверка границ
             if (gridManager.GetCellObject(nearX, nearY) == null) continue;   
-            if(gridManager.IsCellOccupied(nearX, nearY) && gridManager.GetCircleAt(nearX, nearY).Type == CircleType.Core) continue;   
+            
             
             if (!gridManager.HasBarrierAt(nearX, nearY))
             {
